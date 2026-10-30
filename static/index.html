@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICP Clarity Lab — Agentic B2B GTM & Public OSINT Platform</title>
+  <meta name="description" content="Autonomous client discovery, decision-maker extraction, and outreach generation powered by 50+ unblocked public sources and FastMCP.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <div class="brand">
+        <span class="brand-name">ICP Clarity Lab</span>
+        <span class="brand-badge">Agentic OSINT • FastMCP</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#case-study" class="nav-link">Wispr Flow Case Study</a>
+        <a href="/app" class="btn btn-primary btn-sm">Launch Autonomous Studio &rarr;</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Stage -->
+  <section class="hero-stage">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>52 Live Unblocked Sources • Zero Paid Lead APIs • FastMCP Enabled</span>
+      </div>
+      <h1 class="hero-title">
+        Stop Pitching Paper Hypotheses.
+        <span class="serif-voice">Discover Real Companies Actively Hurting for Your Product.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Most ICP tools generate theoretical documents about giant corporations. ICP Clarity Lab searches 50+ unblocked public sources, finds reachable small-to-midsize businesses experiencing the exact bottleneck you solve, and harvests their real decision-makers, verified emails, and LinkedIn profiles.
+      </p>
+
+      <!-- Interactive Hero Conversion Bridge -->
+      <div class="hero-bridge-card">
+        <div class="bridge-header">
+          <span class="bridge-title">Try with a Real Business Brief</span>
+          <span class="mono-voice" style="color: var(--accent-cyan); font-size: 0.8rem;">Ready to scout</span>
+        </div>
+
+        <div class="preset-selector-bar" id="hero-presets">
+          <button class="preset-chip active" data-preset="kriu_hiring">KRIU (Tech Hiring Platform)</button>
+          <button class="preset-chip" data-preset="solar_telangana">Commercial Solar (Telangana)</button>
+          <button class="preset-chip" data-preset="workflow_automation">Logistics Automation</button>
+          <button class="preset-chip" data-preset="tech_agency">Executive Tech Recruiting</button>
+        </div>
+
+        <textarea id="hero-brief-input" class="bridge-textarea" placeholder="Describe what you sell, who you think needs it, and any constraints or past customer observations..."></textarea>
+
+        <div class="bridge-footer">
+          <span class="bridge-hint">💡 Stage 1 distills your brief into clean JSON before querying 50+ live feeds.</span>
+          <button id="hero-launch-btn" class="btn btn-primary">
+            Launch Autonomous Discovery &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3-Pillar Platform Feature Section -->
+  <section class="split-frame-section" id="how-it-works">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-kicker">Architecture & Features</div>
+        <h2 class="section-title">The Complete Agentic B2B Client Discovery Engine</h2>
+        <p style="color: var(--ink-secondary); max-width: 620px; margin: 0 auto;">
+          Built for founders and sales teams who need real clients, verified decision-makers, and actionable outreach—not generic hallucinated advice.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 2.5rem;">
+        <div class="panel-card">
+          <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">🌐</div>
+          <h3 style="font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem;">50+ Unblocked Public Sources</h3>
+          <p style="font-size: 0.875rem; color: var(--ink-secondary); line-height: 1.6;">
+            100% free, restriction-free data across Hacker News Who is Hiring, RemoteOK, YC small teams (≤50), Economic Times MSME RSS, YourStory, GitHub Orgs, and NPM registries. Zero paid lead APIs required.
+          </p>
+        </div>
+
+        <div class="panel-card">
+          <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">🎯</div>
+          <h3 style="font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem;">Pain-First SMB Matching</h3>
+          <p style="font-size: 0.875rem; color: var(--ink-secondary); line-height: 1.6;">
+            Searches for observable problem symptoms (active hiring bottlenecks, manual workflow complaints, seed expansion) rather than generic industry tags. Excludes giant enterprise press releases so you find reachable SMBs.
+          </p>
+        </div>
+
+        <div class="panel-card">
+          <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">🔌</div>
+          <h3 style="font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem;">FastMCP for Zero-Token Reasoning</h3>
+          <p style="font-size: 0.875rem; color: var(--ink-secondary); line-height: 1.6;">
+            Connect your own Claude Desktop, Cursor, or ChatGPT directly via our built-in Model Context Protocol (MCP) server. External AI does the reasoning while ICP Lab scrapes locally with <strong>zero API token costs</strong>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Wispr Flow Case Study Section -->
+  <section class="case-study-section" id="case-study">
+    <div class="container">
+      <div class="case-study-card">
+        <div class="section-kicker">Wispr Flow Case Study</div>
+        <h2 class="serif-voice" style="font-size: 2.25rem; font-style: italic; color: #fff; margin: 0.5rem 0 1rem;">
+          "Wispr Flow dictation feels like magic. But who actually signs the check?"
+        </h2>
+        <p style="color: var(--ink-secondary); font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          Voice-to-text dictation tools often struggle with B2B monetisation because consumers love the novelty, but enterprise buyers demand security, API integration, and documented time savings. We fed Wispr Flow's public value proposition through ICP Clarity Lab.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+          <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--hairline);">
+            <strong style="color: var(--status-user-provided); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Validated Target Account</strong>
+            <p style="font-size: 0.8rem; color: var(--ink-secondary);">High-volume clinical documentation, technical founders conducting code reviews, and remote software engineers writing long architectural specs.</p>
+          </div>
+          <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--hairline);">
+            <strong style="color: var(--accent-cyan); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Purchasing Gatekeeper</strong>
+            <p style="font-size: 0.8rem; color: var(--ink-secondary);">VP of Engineering or Compliance Officer concerned with clipboard security and microphone audio retention on proprietary codebases.</p>
+          </div>
+          <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--hairline);">
+            <strong style="color: var(--status-assumption); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Mom-Test Testable Hypothesis</strong>
+            <p style="font-size: 0.8rem; color: var(--ink-secondary);">"How many hours did your senior engineers spend last week writing pull request descriptions and architectural RFCs rather than coding?"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div>
+        <strong>ICP Clarity Lab</strong> — Agentic B2B GTM & Public OSINT Platform.
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 0.8rem;">
+        FastMCP Enabled • 52 Verified Unblocked Sources
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Hero interactive presets
+    const presets = {
+      kriu_hiring: "I am building KRIU, a hiring-related workflow platform for B2B tech companies and growing startups. We help hiring managers and tech leads evaluate candidate engineering capabilities faster and reduce interview fatigue. We want to avoid generic small gig marketplaces and focus on funded startups and scaling product companies in India and remote teams that are actively hiring engineers.",
+      solar_telangana: "I provide commercial solar installations to manufacturing companies in Telangana. I am interested in companies with suitable industrial facilities and high electricity consumption. I prefer businesses that are expanding or upgrading facilities. I don't want residential customers or small retail shops.",
+      workflow_automation: "I provide custom AI and process automation for mid-sized logistics and distribution companies in India and SEA. We automate invoice processing, warehouse dispatch updates, and exception reporting. We do not work with early-stage non-revenue startups or companies with fewer than 20 operations staff.",
+      tech_agency: "We run a specialized recruitment agency placing senior backend and AI engineers for series-A to series-C startups. We do not do mass volume hiring or generic IT staffing. We want founders and CTOs who are tired of receiving 500 unqualified resumes from traditional job boards."
+    };
+
+    const textarea = document.getElementById("hero-brief-input");
+    textarea.value = presets["kriu_hiring"];
+
+    document.querySelectorAll("#hero-presets .preset-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        document.querySelectorAll("#hero-presets .preset-chip").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        textarea.value = presets[chip.dataset.preset];
+      });
+    });
+
+    document.getElementById("hero-launch-btn").addEventListener("click", () => {
+      const text = textarea.value.trim();
+      if (text) {
+        sessionStorage.setItem("icp_pending_brief", text);
+      }
+      window.location.href = "/app";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICP Clarity Lab — Agentic B2B GTM & Public OSINT Platform</title>
+  <meta name="description" content="Autonomous client discovery, decision-maker extraction, and outreach generation powered by 50+ unblocked public sources and MCP.">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    if (window.location.protocol === "file:") {
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll('a[href="/"]').forEach(a => a.href = "index.html");
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <div class="brand">
+        <a href="/" style="color: inherit; display: flex; align-items: center; gap: 0.75rem;">
+          <span class="brand-name">ICP Clarity Lab</span>
+        </a>
+        <span class="brand-badge" id="system-model-badge">Agentic OSINT • FastMCP</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span id="health-status-indicator" class="mono-voice" style="font-size: 0.8rem; color: var(--status-user-provided);">● 52 Sources Ready</span>
+        <a href="/" class="btn btn-secondary btn-sm">&larr; Case Study & Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace-wrap">
+    <div class="container">
+
+      <!-- Workbench Navigation Tabs -->
+      <nav class="workbench-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="tab-studio">
+          <span>⚡</span>
+          <span>Autonomous Studio</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-sources">
+          <span>🌐</span>
+          <span>50 Unblocked Sources (<span id="tab-sources-badge">52</span>)</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-workbooks">
+          <span>📂</span>
+          <span>GTM Workbooks (<span id="tab-campaigns-badge">0</span>)</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-mcp">
+          <span>🔌</span>
+          <span>MCP Connect (ChatGPT & Claude)</span>
+        </button>
+      </nav>
+
+      <!-- TAB 1: STUDIO (Main Pipeline) -->
+      <div id="tab-studio" class="tab-content-panel">
+
+        <!-- Stage 1: Brief Input & Customer Targeting Panel -->
+        <section class="panel-card" id="stage-input-panel">
+          <div class="panel-title-bar">
+            <div class="panel-title">
+              <span class="step-indicator">STAGE 1</span>
+              <span>Target Customers & Problem Definition</span>
+            </div>
+            <div class="preset-selector-bar" style="margin-bottom: 0;">
+              <span class="mono-voice" style="font-size: 0.8rem; color: var(--ink-muted); margin-right: 0.5rem; align-self: center;">Load Preset:</span>
+              <button class="preset-chip" data-preset="kriu_hiring">KRIU (Hiring Tech)</button>
+              <button class="preset-chip" data-preset="solar_telangana">Commercial Solar</button>
+              <button class="preset-chip" data-preset="workflow_automation">Logistics Automation</button>
+              <button class="preset-chip" data-preset="tech_agency">Tech Recruitment</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <label for="raw-brief-input" style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem;">
+              Founder's Offering & Problem Statement (Typed or Wispr Flow Voice Transcript):
+            </label>
+            <textarea id="raw-brief-input" class="bridge-textarea" style="min-height: 110px;" placeholder="Explain what product/service you offer, which problem you solve, and what type of companies experience this bottleneck..."></textarea>
+          </div>
+
+          <!-- Customer Archetype & Scale Controls -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <label style="display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.4rem;">
+                Target Buyer Archetype:
+              </label>
+              <div class="time-presets-bar" style="margin-bottom: 0.5rem;">
+                <button type="button" class="time-chip active archetype-chip" data-archetype="Founders & Co-Founders">Founders / CEOs</button>
+                <button type="button" class="time-chip archetype-chip" data-archetype="CTOs & Engineering Leads">CTOs / Tech Leads</button>
+                <button type="button" class="time-chip archetype-chip" data-archetype="Plant Heads & Operations Directors">Plant Heads / Ops</button>
+                <button type="button" class="time-chip archetype-chip" data-archetype="HR & Talent Acquisition Heads">HR / Hiring Leads</button>
+              </div>
+              <input type="text" id="custom-archetype-input" class="bridge-textarea" style="min-height: 38px; padding: 0.4rem 0.75rem; font-size: 0.875rem;" value="Founders & Engineering Leaders" placeholder="Or type custom role...">
+            </div>
+
+            <div>
+              <label style="display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.4rem;">
+                Target Company Scale Focus (Anti-Giant Filter):
+              </label>
+              <div class="time-presets-bar" style="margin-bottom: 0.5rem;">
+                <button type="button" class="time-chip active size-chip" data-size="Small (2-50 employees)">Small (2-50)</button>
+                <button type="button" class="time-chip size-chip" data-size="Mid-Sized (51-200 employees)">Mid-Sized (51-200)</button>
+                <button type="button" class="time-chip size-chip" data-size="Regional MSMEs">Regional MSMEs</button>
+                <button type="button" class="time-chip size-chip" data-size="All Non-Enterprise SMBs">All Non-Enterprise</button>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--ink-muted);">Prevents giant conglomerates from drowning out real, reachable prospects.</span>
+            </div>
+          </div>
+
+          <!-- Sliding Time-Window & Prospect Count Controls Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+            <!-- Sliding Time-Window Slider -->
+            <div class="slider-container" style="margin-bottom: 0;">
+              <div class="slider-header">
+                <span style="font-weight: 600; font-size: 0.875rem;">
+                  ⏱ Sliding Time Range Window:
+                </span>
+                <span id="slider-readout" class="mono-voice" style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600;">
+                  Last 30 Days (Active Signals)
+                </span>
+              </div>
+              <input type="range" id="time-window-slider" class="slider-range-input" min="1" max="365" value="30">
+              <div class="time-presets-bar">
+                <button type="button" class="time-chip time-preset-btn" data-days="1">24h</button>
+                <button type="button" class="time-chip time-preset-btn" data-days="7">7d</button>
+                <button type="button" class="time-chip time-preset-btn active" data-days="30">30d</button>
+                <button type="button" class="time-chip time-preset-btn" data-days="90">90d</button>
+                <button type="button" class="time-chip time-preset-btn" data-days="365">1y</button>
+                <button type="button" class="time-chip time-preset-btn" data-days="0">All</button>
+              </div>
+            </div>
+
+            <!-- Target Prospect Count Selector -->
+            <div class="slider-container" style="margin-bottom: 0;">
+              <div class="slider-header">
+                <span style="font-weight: 600; font-size: 0.875rem;">
+                  🎯 Target Prospect Count to Discover:
+                </span>
+                <span id="prospect-count-readout" class="mono-voice" style="font-size: 0.8rem; color: var(--status-user-provided); font-weight: 600;">
+                  8 Prospects (Default)
+                </span>
+              </div>
+              <div class="time-presets-bar" style="margin-top: 0.5rem;">
+                <button type="button" class="time-chip count-preset-btn" data-count="4">4 Prospects</button>
+                <button type="button" class="time-chip count-preset-btn active" data-count="8">8 Prospects</button>
+                <button type="button" class="time-chip count-preset-btn" data-count="15">15 Prospects</button>
+                <button type="button" class="time-chip count-preset-btn" data-count="25">25 Prospects</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem;">
+                <span style="font-size: 0.75rem; color: var(--ink-muted);">Or custom count:</span>
+                <input type="number" id="custom-prospect-count-input" class="bridge-textarea" min="2" max="50" value="8" style="min-height: 32px; width: 80px; padding: 0.2rem 0.5rem; font-size: 0.8rem;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Unblocked Sources Matrix -->
+          <div class="sources-matrix-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 600; font-size: 0.875rem;">
+                🌐 Public Unblocked Sources (Select Categories to Query):
+              </span>
+              <span style="font-size: 0.75rem; color: var(--status-user-provided);">100% Free • Zero Paid APIs</span>
+            </div>
+            <div class="category-toggles-grid">
+              <label class="category-checkbox-item">
+                <input type="checkbox" class="source-cat-check" value="ats_job_boards" checked>
+                <div>
+                  <div style="font-weight: 600; font-size: 0.8rem; color: #fff;">Public ATS & Job Feeds (13)</div>
+                  <div style="font-size: 0.725rem; color: var(--ink-secondary);">HN Who is Hiring, RemoteOK, Remotive, Arbeitnow, Himalayas</div>
+                </div>
+              </label>
+
+              <label class="category-checkbox-item">
+                <input type="checkbox" class="source-cat-check" value="startup_directories" checked>
+                <div>
+                  <div style="font-weight: 600; font-size: 0.8rem; color: #fff;">Small Startup Directories (8)</div>
+                  <div style="font-size: 0.725rem; color: var(--ink-secondary);">YC small teams (≤50), ProductHunt, LaunchingNext, GitHub Orgs</div>
+                </div>
+              </label>
+
+              <label class="category-checkbox-item">
+                <input type="checkbox" class="source-cat-check" value="regional_msme_news" checked>
+                <div>
+                  <div style="font-weight: 600; font-size: 0.8rem; color: #fff;">Regional MSME & Tech News (10)</div>
+                  <div style="font-size: 0.725rem; color: var(--ink-secondary);">Economic Times MSME RSS, YourStory, Inc42, Google SME News</div>
+                </div>
+              </label>
+
+              <label class="category-checkbox-item">
+                <input type="checkbox" class="source-cat-check" value="package_registries" checked>
+                <div>
+                  <div style="font-weight: 600; font-size: 0.8rem; color: #fff;">Package & Agency Registries (9)</div>
+                  <div style="font-size: 0.725rem; color: var(--ink-secondary);">NPM, PyPI, WordPress Plugins, Packagist with maintainer emails</div>
+                </div>
+              </label>
+
+              <label class="category-checkbox-item">
+                <input type="checkbox" class="source-cat-check" value="corporate_registries" checked>
+                <div>
+                  <div style="font-weight: 600; font-size: 0.8rem; color: #fff;">Corporate Registries & OSINT (5)</div>
+                  <div style="font-size: 0.725rem; color: var(--ink-secondary);">Clearbit Domain Resolver, GLEIF Legal Entities, Jina Reader Proxy</div>
+                </div>
+              </label>
+
+              <label class="category-checkbox-item">
+                <input type="checkbox" class="source-cat-check" value="dev_pain_communities" checked>
+                <div>
+                  <div style="font-weight: 600; font-size: 0.8rem; color: #fff;">Pain-First Communities (7)</div>
+                  <div style="font-size: 0.725rem; color: var(--ink-secondary);">Ask HN, StackExchange, DEV.to technical scaling discussions</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.825rem; cursor: pointer; color: var(--ink-secondary);">
+                <input type="checkbox" id="chk-deterministic-mode">
+                <span>Deterministic Mode (0 AI Tokens)</span>
+              </label>
+            </div>
+            <button id="btn-distill-brief" class="btn btn-primary" style="padding: 0.75rem 1.75rem;">
+              <span id="distill-btn-text">Stage 1: Distill Problem Contract &rarr;</span>
+              <span id="distill-btn-spinner" style="display: none;">Distilling Problem...</span>
+            </button>
+          </div>
+
+          <!-- Live Multi-Agent Execution Stream -->
+          <div class="agent-stream" id="agent-stream-panel">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div class="pulse-dot"></div>
+              <strong style="font-size: 0.85rem; color: #fff;">Multi-Agent Autonomous Discovery Stream</strong>
+            </div>
+            <div class="agent-step" id="step-agent-1"><span>Agent 1:</span> Distilling brief into problem symptoms & anti-giant queries...</div>
+            <div class="agent-step" id="step-agent-2"><span>Agent 2:</span> Scanning 50 unblocked public feeds & job boards...</div>
+            <div class="agent-step" id="step-agent-3"><span>Agent 3:</span> Resolving domains, crawling websites & harvesting contacts...</div>
+            <div class="agent-step" id="step-agent-4"><span>Agent 4:</span> Synthesizing personalized Mom-Test & cold outreach copy...</div>
+            <div class="agent-step" id="step-agent-5"><span>Agent 5:</span> Compiling strategic ICP report & saving GTM workbook...</div>
+          </div>
+        </section>
+
+        <!-- Stage 1.5: Review Distilled Brief Modal -->
+        <div class="modal-overlay" id="brief-modal-overlay">
+          <div class="modal-box">
+            <div class="modal-header">
+              <div>
+                <span class="step-indicator" style="margin-bottom: 0.25rem; display: inline-block;">STAGE 1 REVIEW</span>
+                <h3 style="font-size: 1.25rem;">Review Problem Specification Contract</h3>
+              </div>
+              <button id="btn-close-brief-modal" class="btn btn-secondary btn-sm">&times;</button>
+            </div>
+
+            <p style="font-size: 0.875rem; color: var(--ink-secondary); margin-bottom: 1.25rem;">
+              Your brief has been distilled into a clean, hallucination-resistant JSON spec. Review these parameters before autonomous scouting begins:
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+              <div>
+                <label style="font-size: 0.825rem; font-family: var(--font-mono); color: var(--accent-cyan); display: block; margin-bottom: 0.25rem;">CORE OFFERING:</label>
+                <input type="text" id="distilled-offering" class="bridge-textarea" style="min-height: 40px; padding: 0.5rem 0.75rem;">
+              </div>
+
+              <div>
+                <label style="font-size: 0.825rem; font-family: var(--font-mono); color: var(--accent-cyan); display: block; margin-bottom: 0.25rem;">TARGET AUDIENCE HYPOTHESIS:</label>
+                <input type="text" id="distilled-target" class="bridge-textarea" style="min-height: 40px; padding: 0.5rem 0.75rem;">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div>
+                  <label style="font-size: 0.825rem; font-family: var(--font-mono); color: var(--accent-cyan); display: block; margin-bottom: 0.25rem;">BUYER ARCHETYPE:</label>
+                  <input type="text" id="distilled-archetype" class="bridge-textarea" style="min-height: 40px; padding: 0.5rem 0.75rem;">
+                </div>
+                <div>
+                  <label style="font-size: 0.825rem; font-family: var(--font-mono); color: var(--accent-cyan); display: block; margin-bottom: 0.25rem;">SCALE FOCUS:</label>
+                  <input type="text" id="distilled-size" class="bridge-textarea" style="min-height: 40px; padding: 0.5rem 0.75rem;">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size: 0.825rem; font-family: var(--font-mono); color: var(--accent-cyan); display: block; margin-bottom: 0.25rem;">EXPLICIT CONSTRAINTS & EXCLUSIONS:</label>
+                <input type="text" id="distilled-constraints" class="bridge-textarea" style="min-height: 40px; padding: 0.5rem 0.75rem;">
+              </div>
+
+              <div>
+                <label style="font-size: 0.825rem; font-family: var(--font-mono); color: var(--accent-cyan); display: block; margin-bottom: 0.25rem;">PROBLEM-SYMPTOM SEARCH QUERIES:</label>
+                <textarea id="distilled-queries" class="bridge-textarea" style="min-height: 65px; font-family: var(--font-mono); font-size: 0.85rem;"></textarea>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 1rem;">
+              <button id="btn-cancel-distill" class="btn btn-secondary">Edit Brief</button>
+              <button id="btn-compile-full-icp" class="btn btn-primary">
+                <span id="compile-btn-text">Launch Autonomous Scouting & Contacts &rarr;</span>
+                <span id="compile-btn-spinner" style="display: none;">Scouting 50 Feeds...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage 2: Audit Telemetry Bar -->
+        <section id="telemetry-section" style="display: none; margin-top: 2rem;">
+          <div class="telemetry-bar">
+            <div class="telemetry-item">
+              <span>Model / Engine:</span>
+              <span class="telemetry-val" id="tele-model">gemini-2.5-flash-lite</span>
+            </div>
+            <div class="telemetry-item">
+              <span>Tokens Consumed:</span>
+              <span class="telemetry-val" id="tele-tokens">0</span>
+            </div>
+            <div class="telemetry-item">
+              <span>Leads Discovered:</span>
+              <span class="telemetry-val" id="tele-leads-count">0</span>
+            </div>
+            <div class="telemetry-item">
+              <span>Elapsed:</span>
+              <span class="telemetry-val" id="tele-time">0.0s</span>
+            </div>
+            <div class="telemetry-item">
+              <button id="btn-inspect-signals" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                Inspect Market Signals (<span id="tele-signal-count">0</span>)
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Main Results Container -->
+        <div id="results-container" style="display: none; margin-top: 1.5rem;">
+
+          <!-- PRIMARY ACTION VIEW: Clay-Style Prospect & Contact Smart-Table -->
+          <section class="panel-card" style="margin-bottom: 2rem; border-color: rgba(16, 185, 129, 0.4);">
+            <div class="panel-title-bar">
+              <div class="panel-title">
+                <span class="step-indicator" style="background: var(--status-user-provided-bg); color: var(--status-user-provided);">LEADS</span>
+                <span>Live Matched Target Companies, Decision-Makers & Contacts</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button id="btn-export-csv" class="btn btn-primary btn-sm">⬇ Download Leads CSV</button>
+                <button id="btn-copy-all-emails" class="btn btn-secondary btn-sm">📋 Copy All Emails</button>
+              </div>
+            </div>
+
+            <!-- Smart Table Filters Bar -->
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
+              <input type="text" id="lead-filter-search" class="bridge-textarea" style="min-height: 36px; padding: 0.35rem 0.75rem; font-size: 0.85rem; max-width: 250px;" placeholder="Search company or person...">
+              <button class="preset-chip active lead-filter-chip" data-filter="all">All Leads (<span id="filter-count-all">0</span>)</button>
+              <button class="preset-chip lead-filter-chip" data-filter="has_email">Has Email (<span id="filter-count-email">0</span>)</button>
+              <button class="preset-chip lead-filter-chip" data-filter="has_linkedin">Has LinkedIn (<span id="filter-count-li">0</span>)</button>
+              <button class="preset-chip lead-filter-chip" data-filter="high_fit">Fit Score ≥ 80</button>
+            </div>
+
+            <div class="smart-table-wrap">
+              <table class="smart-table">
+                <thead>
+                  <tr>
+                    <th>Company & Scale</th>
+                    <th>Verifiable Proof & Evidence</th>
+                    <th>Identified Decision-Makers & Responsibilities</th>
+                    <th>Verified Public Inboxes & Phones</th>
+                    <th>CRM Status</th>
+                    <th>AI Outreach</th>
+                  </tr>
+                </thead>
+                <tbody id="prospects-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Executive Thesis Card -->
+          <section class="panel-card" style="margin-bottom: 2rem; border-color: rgba(99, 102, 241, 0.3);">
+            <div class="panel-title-bar">
+              <div class="panel-title">
+                <span class="step-indicator">THESIS</span>
+                <span>Ideal Customer Profile Core Thesis</span>
+              </div>
+              <button id="btn-force-refresh" class="btn btn-secondary btn-sm" title="Re-run without cache">
+                Force Recompile ↺
+              </button>
+            </div>
+            <h2 id="report-icp-statement" class="serif-voice" style="font-size: 1.85rem; font-style: italic; color: #c7d2fe; margin-bottom: 1rem;"></h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; font-size: 0.9rem;">
+              <div><strong>Offering:</strong> <span id="report-offering" style="color: var(--ink-secondary);"></span></div>
+              <div><strong>Target Entity:</strong> <span id="report-target" style="color: var(--ink-secondary);"></span></div>
+              <div><strong>Geography:</strong> <span id="report-geography" style="color: var(--ink-secondary);"></span></div>
+            </div>
+          </section>
+
+          <!-- Stage 3: Assumption Ledger -->
+          <section class="panel-card" style="margin-bottom: 2rem;">
+            <div class="panel-title-bar">
+              <div class="panel-title">
+                <span class="step-indicator">LEDGER</span>
+                <span>Epistemic Assumption Ledger</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="preset-chip active ledger-filter" data-filter="all">All Claims</button>
+                <button class="preset-chip ledger-filter" data-filter="user_provided">User Facts</button>
+                <button class="preset-chip ledger-filter" data-filter="external_signal">Signals</button>
+                <button class="preset-chip ledger-filter" data-filter="assumption">Assumptions</button>
+              </div>
+            </div>
+            <div class="ledger-grid" id="ledger-items-container"></div>
+            <div id="unknowns-box" style="margin-top: 1.5rem; background: var(--status-unknown-bg); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-md); padding: 1.25rem;">
+              <h4 style="color: var(--status-unknown); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>⚠️</span>
+                <span>Identified Information Gaps (Critical Unknowns)</span>
+              </h4>
+              <ul id="unknowns-list" style="padding-left: 1.5rem; font-size: 0.9rem; color: var(--ink-secondary); display: flex; flex-direction: column; gap: 0.4rem;"></ul>
+            </div>
+          </section>
+
+          <!-- Stage 4: Buyer Persona Matrix -->
+          <section class="panel-card" style="margin-bottom: 2rem;">
+            <div class="panel-title-bar">
+              <div class="panel-title">
+                <span class="step-indicator">PERSONAS</span>
+                <span>Buyer Persona & Purchasing Committee Matrix</span>
+              </div>
+            </div>
+            <div class="persona-grid" id="personas-container"></div>
+          </section>
+
+          <!-- Stage 5 & 6: Mom-Test Questions & Roadmap -->
+          <section class="panel-card" style="margin-bottom: 2rem;">
+            <div class="panel-title-bar">
+              <div class="panel-title">
+                <span class="step-indicator">VALIDATION</span>
+                <span>Mom-Test Discovery Guide & Exploratory Roadmap</span>
+              </div>
+            </div>
+            <h3 style="font-size: 1.05rem; margin-bottom: 0.5rem;">1. Non-Pitch Past-Experience Discovery Questions</h3>
+            <div id="questions-container"></div>
+            <h3 style="font-size: 1.05rem; margin-top: 2rem; margin-bottom: 0.5rem;">2. Exploratory Customer Discovery Roadmap</h3>
+            <div id="plan-container"></div>
+          </section>
+
+          <!-- Export Bar -->
+          <section class="panel-card" style="border-color: rgba(99, 102, 241, 0.35);">
+            <div class="panel-title-bar">
+              <div class="panel-title">
+                <span class="step-indicator">EXPORT</span>
+                <span>Export Strategy & Contacts</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+              <button id="btn-download-csv-bottom" class="btn btn-primary">⬇ Download Prospects CSV (.csv)</button>
+              <button id="btn-copy-markdown" class="btn btn-secondary">📋 Copy Markdown</button>
+              <button id="btn-download-markdown" class="btn btn-secondary">⬇ Download Markdown (.md)</button>
+              <button id="btn-download-json" class="btn btn-secondary">⬇ Download JSON (.json)</button>
+            </div>
+          </section>
+
+        </div>
+
+      </div>
+
+      <!-- TAB 2: 50 UNBLOCKED SOURCES EXPLORER -->
+      <div id="tab-sources" class="tab-content-panel" style="display: none;">
+        <section class="panel-card">
+          <div class="panel-title-bar">
+            <div class="panel-title">
+              <span class="step-indicator">DIRECTORY</span>
+              <span>52 Live-Verified Restriction-Free Public Sources</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="preset-chip active src-filter-chip" data-cat="all">All (52)</button>
+              <button class="preset-chip src-filter-chip" data-cat="ats_job_boards">Job Boards (13)</button>
+              <button class="preset-chip src-filter-chip" data-cat="startup_directories">Directories (8)</button>
+              <button class="preset-chip src-filter-chip" data-cat="regional_msme_news">MSME News (10)</button>
+              <button class="preset-chip src-filter-chip" data-cat="package_registries">Package Repos (9)</button>
+              <button class="preset-chip src-filter-chip" data-cat="corporate_registries">Registries (5)</button>
+              <button class="preset-chip src-filter-chip" data-cat="dev_pain_communities">Communities (7)</button>
+            </div>
+          </div>
+          <p style="font-size: 0.875rem; color: var(--ink-secondary); margin-bottom: 1.5rem;">
+            Every single source in this catalog was tested live in Python and returned <code>HTTP 200 OK</code> with zero blocks and zero paid API keys required. Click <strong>Scan Source</strong> on any card to run an instant targeted scrape.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;" id="sources-catalog-container">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 3: GTM WORKBOOKS & CAMPAIGNS -->
+      <div id="tab-workbooks" class="tab-content-panel" style="display: none;">
+        <section class="panel-card">
+          <div class="panel-title-bar">
+            <div class="panel-title">
+              <span class="step-indicator">CAMPAIGNS</span>
+              <span>Saved GTM Workbooks & Prospect Lists</span>
+            </div>
+            <button id="btn-refresh-campaigns" class="btn btn-secondary btn-sm">Refresh List ↺</button>
+          </div>
+          <p style="font-size: 0.875rem; color: var(--ink-secondary); margin-bottom: 1.5rem;">
+            Prospect lists generated by ICP Clarity Lab are saved automatically in your local workspace (<code>.cache/workspaces/</code>). Reopen any campaign to manage lead outreach statuses or download fresh CSVs.
+          </p>
+          <div id="campaigns-list-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 4: MCP CONNECT -->
+      <div id="tab-mcp" class="tab-content-panel" style="display: none;">
+        <section class="panel-card">
+          <div class="panel-title-bar">
+            <div class="panel-title">
+              <span class="step-indicator">FAST-MCP</span>
+              <span>Connect with Claude Desktop, Cursor, Antigravity & ChatGPT</span>
+            </div>
+            <span class="brand-badge">Zero Gemini Tokens</span>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--ink-secondary); margin-bottom: 1.25rem;">
+            By running ICP Clarity Lab as a <strong>Model Context Protocol (MCP) Server</strong>, external AI reasoning engines (like Claude Desktop or ChatGPT) call our local Python scrapers and contact stitchers directly. Your local machine does all the heavy scraping, consuming <strong>zero Gemini API tokens</strong>!
+          </p>
+
+          <h4 style="font-size: 1rem; margin-bottom: 0.5rem; color: #fff;">1. Claude Desktop Configuration:</h4>
+          <p style="font-size: 0.85rem; color: var(--ink-secondary); margin-bottom: 0.5rem;">
+            Add this snippet to your <code>claude_desktop_config.json</code> file:
+          </p>
+          <pre style="background: var(--bg-panel); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--hairline); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto; color: var(--accent-cyan); margin-bottom: 1.5rem;">{
+  "mcpServers": {
+    "icp-clarity-lab": {
+      "command": "python",
+      "args": ["-m", "app.mcp_server"],
+      "cwd": "E:\\Jupyter Notebook\\ICP Lab"
+    }
+  }
+}</pre>
+
+          <h4 style="font-size: 1rem; margin-bottom: 0.5rem; color: #fff;">2. Available MCP Tools:</h4>
+          <ul style="padding-left: 1.5rem; font-size: 0.875rem; color: var(--ink-secondary); display: flex; flex-direction: column; gap: 0.5rem;">
+            <li><code>discover_prospects</code>: Discovers real small/midsize companies with observable problem symptoms.</li>
+            <li><code>stitch_company_contacts</code>: Resolves domain, parses JSON-LD, extracts public emails and LinkedIn pages.</li>
+            <li><code>list_unblocked_sources</code>: Returns catalog of 50+ restriction-free public feeds.</li>
+            <li><code>generate_outreach</code>: Synthesizes tailored Mom-Test openers, cold emails, and LinkedIn DM notes.</li>
+            <li><code>save_campaign_leads</code>: Saves leads directly into the local GTM workbook store.</li>
+          </ul>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Slide-over Outreach Drawer -->
+  <div class="outreach-drawer-overlay" id="outreach-drawer-overlay">
+    <div class="outreach-drawer">
+      <div class="drawer-header">
+        <div>
+          <span class="step-indicator" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc;">OUTREACH</span>
+          <h3 id="drawer-company-title" style="font-size: 1.15rem; margin-top: 0.25rem;">Tailored Outreach</h3>
+        </div>
+        <button id="btn-close-drawer" class="btn btn-secondary btn-sm">&times;</button>
+      </div>
+      <div class="drawer-body">
+        <div style="margin-bottom: 1rem;">
+          <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-muted);">OBSERVED PROBLEM SIGNAL:</span>
+          <p id="drawer-signal-text" style="font-size: 0.85rem; color: #e2e8f0; background: rgba(255, 255, 255, 0.03); padding: 0.6rem; border-radius: var(--radius-sm); margin-top: 0.25rem; border-left: 3px solid var(--accent-cyan);"></p>
+        </div>
+
+        <div class="drawer-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <strong style="font-size: 0.9rem; color: #fff;">✉ Problem-Centric Cold Email</strong>
+            <button id="btn-copy-drawer-email" class="copy-pill">📋 Copy Email</button>
+          </div>
+          <div style="margin-bottom: 0.5rem;">
+            <span style="font-size: 0.75rem; color: var(--ink-muted);">Subject:</span>
+            <div id="drawer-email-subject" style="font-weight: 600; font-size: 0.875rem; color: #a5b4fc;"></div>
+          </div>
+          <pre id="drawer-email-body" style="white-space: pre-wrap; font-family: var(--font-sans); font-size: 0.85rem; color: var(--ink-secondary); line-height: 1.5;"></pre>
+          <a id="drawer-mailto-link" href="#" class="btn btn-primary btn-sm" style="display: inline-block; margin-top: 0.75rem;">Launch in Mail Client &rarr;</a>
+        </div>
+
+        <div class="drawer-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <strong style="font-size: 0.9rem; color: #fff;">💼 LinkedIn DM / Connection Note</strong>
+            <button id="btn-copy-drawer-li" class="copy-pill">📋 Copy Note</button>
+          </div>
+          <p id="drawer-li-note" style="font-size: 0.85rem; color: var(--ink-secondary); line-height: 1.5;"></p>
+          <span style="font-size: 0.75rem; color: var(--ink-muted); display: block; margin-top: 0.35rem;">Length: <span id="drawer-li-len">0</span> / 280 characters</span>
+        </div>
+
+        <div class="drawer-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <strong style="font-size: 0.9rem; color: #fff;">🎯 Mom-Test Discovery Question</strong>
+            <button id="btn-copy-drawer-mom" class="copy-pill">📋 Copy Question</button>
+          </div>
+          <p id="drawer-mom-test" style="font-size: 0.85rem; color: var(--status-user-provided); font-style: italic; line-height: 1.5;"></p>
+          <span style="font-size: 0.75rem; color: var(--ink-muted); display: block; margin-top: 0.35rem;">Non-leading past-experience question for exploratory calls.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signals Inspection Modal -->
+  <div class="modal-overlay" id="signals-modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Grounded External Evidence Snippets</h3>
+        <button id="btn-close-signals-modal" class="btn btn-secondary btn-sm">&times;</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--ink-secondary); margin-bottom: 1.25rem;">
+        These non-blocking signals were extracted from official public JSON APIs and URLs to ground your ICP in real market discussions:
+      </p>
+      <div id="signals-modal-content" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div>
+        <strong>ICP Clarity Lab</strong> — Agentic B2B GTM & Public OSINT Platform.
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 0.8rem;">
+        FastMCP Enabled • 52 Verified Unblocked Sources
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
