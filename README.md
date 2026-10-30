@@ -161,6 +161,35 @@ Start the FastAPI server:
 
 ---
 
+## 🚀 Google Cloud Run Deployment
+
+The platform is fully containerized and configured for **Google Cloud Run (Free Tier)**.
+
+### Deployment Specifications:
+* **Region:** `us-central1` (Iowa — eligible for GCP Free Tier: 2 million requests/mo free)
+* **Compute Resources:** 2 vCPU, 2 GiB RAM
+* **Request Timeout:** 300 seconds (handles multi-feed OSINT scraping)
+* **Concurrency:** 80 requests / instance
+* **Public Ingress:** `--allow-unauthenticated`
+
+### Option 1: 1-Click Deployment via CLI (Recommended)
+Run the automated deployment script from PowerShell:
+```powershell
+.\deploy.ps1 -ProjectId "YOUR_GCP_PROJECT_ID"
+```
+Or on Linux / macOS / Cloud Shell:
+```bash
+chmod +x deploy.sh && ./deploy.sh "YOUR_GCP_PROJECT_ID"
+```
+
+### Option 2: Automated CI/CD via Google Cloud Build
+Trigger the pipeline using [cloudbuild.yaml](file:///e:/Jupyter%20Notebook/ICP%20Lab/cloudbuild.yaml):
+```powershell
+gcloud builds submit --config=cloudbuild.yaml --substitutions=_GEMINI_API_KEY="your_api_key_here"
+```
+
+---
+
 ## 🤖 Model Context Protocol (MCP) Integration
 
 You can connect **Claude Desktop**, **ChatGPT (via Desktop Actions)**, **Cursor**, or **Antigravity** directly to ICP Clarity Lab.
