@@ -4,6 +4,7 @@ import asyncio
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, Body, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, PlainTextResponse
 from dotenv import load_dotenv
@@ -47,6 +48,15 @@ app = FastAPI(
     title="ICP Clarity Lab & GTM OSINT Platform",
     description="Reality-grounded B2B Ideal Customer Profile compiler and autonomous public OSINT prospect discovery engine.",
     version="2.0.0"
+)
+
+# Enable CORS for cross-origin client access (e.g. MCP clients or remote web apps)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Mount static assets
@@ -373,3 +383,10 @@ async def mcp_status_endpoint():
         ],
         "token_cost": "0 Gemini API tokens consumed when using external AI clients"
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8080))
+    host = os.getenv("HOST", "0.0.0.0")
+    uvicorn.run("app.main:app", host=host, port=port)
