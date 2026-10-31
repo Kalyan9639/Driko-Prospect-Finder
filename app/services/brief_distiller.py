@@ -49,54 +49,35 @@ def _mock_distill_fallback(raw_brief: str) -> DistilledBrief:
     )
 
 
-async def distill_raw_brief(raw_brief: str) -> DistilledBrief:
+async def distill_raw_brief(
+    raw_brief: str,
+    custom_provider: Optional[str] = None,
+    custom_api_key: Optional[str] = None,
+    custom_model: Optional[str] = None
+) -> DistilledBrief:
     """
-    Distills raw English text into a compact DistilledBrief JSON using Gemini.
-    Uses resilient multi-model cascading and exponential retry to bypass 503 high-demand spikes.
+    Distills raw English text into a compact DistilledBrief JSON.
+    Routes to Groq or Google Gemini via llm_router with automatic deterministic fallback.
     """
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    if not api_key or api_key == "your_gemini_api_key_here":
-        return _mock_distill_fallback(raw_brief)
+    from app.services.llm_router import route_llm_json
 
-    from google import genai
-    from google.genai import types
-
-    client = genai.Client(api_key=api_key)
-    safe_schema = get_gemini_safe_schema(DistilledBrief)
-
-    config = types.GenerateContentConfig(
-        system_instruction=SYSTEM_PROMPT_DISTILLER,
-        response_mime_type="application/json",
-        response_schema=safe_schema,
-        temperature=0.1,
+    data, error, telemetry = await route_llm_json(
+        prompt=f"Founder's Business Brief:\n\n{raw_brief}",
+        system_prompt=SYSTEM_PROMPT_DISTILLER,
+        schema_cls=DistilledBrief,
+        custom_provider=custom_provider,
+        custom_api_key=custom_api_key,
+        custom_model=custom_model,
+        temperature=0.1
     )
 
-    model_name = "gemini-2.5-flash-lite"
-    contents = f"Founder's Business Brief:\n\n{raw_brief}"
-
-    for attempt in range(2):
+    if data:
         try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=contents,
-                config=config,
-            )
-            if response.text:
-                data = json.loads(response.text)
-                return DistilledBrief(**data)
-        except Exception as e:
-            err_str = str(e)
-            is_503 = "503" in err_str or "UNAVAILABLE" in err_str or "high demand" in err_str
-            is_429 = "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str
-            if is_503 and attempt == 0:
-                print(f"[BriefDistiller] Model {model_name} busy (503). Retrying after 1.5s...")
-                await asyncio.sleep(1.5)
-                continue
-            elif is_429:
-                print(f"[BriefDistiller] Model {model_name} quota exhausted (429). Using deterministic brief extraction.")
-                break
-            else:
-                print(f"[BriefDistiller] Model {model_name} error: {err_str[:120]}. Using deterministic brief extraction.")
-                break
+            return DistilledBrief(**data)
+        except Exception as pe:
+            print(f"[BriefDistiller] Schema validation failed: {pe}. Using fallback.")
+
+    if error:
+        print(f"[BriefDistiller] AI Router error: {error}. Using deterministic brief extraction.")
 
     return _mock_distill_fallback(raw_brief)

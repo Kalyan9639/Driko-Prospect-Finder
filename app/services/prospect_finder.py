@@ -542,7 +542,10 @@ async def discover_real_prospects(
     urls: Optional[List[str]] = None,
     time_window_days: int = 30,
     target_count: int = 8,
-    enable_live_grounding: bool = True
+    enable_live_grounding: bool = True,
+    custom_provider: Optional[str] = None,
+    custom_api_key: Optional[str] = None,
+    custom_model: Optional[str] = None
 ) -> List[DiscoveredProspectCompany]:
     """
     Autonomous Discovery Pipeline:
@@ -550,7 +553,7 @@ async def discover_real_prospects(
     2. Deeply extracts real executive decision-makers (from live YC ShowPage JSON, website Schema.org, or hiring authors).
     3. Crawls websites for verified public inboxes (info@, contact@) without guessing fake personal emails.
     4. Attaches EvidenceProof (direct clickable URL + verbatim quote + fit explanation).
-    5. Crafts AI-personalized outreach copy using Gemini Flash Lite for each lead.
+    5. Crafts AI-personalized outreach copy using Gemini or Groq for each lead.
     """
     keywords = brief.precision_search_queries or [brief.target_audience_hypothesis]
     raw_candidates: List[Dict[str, Any]] = []
@@ -708,14 +711,17 @@ async def discover_real_prospects(
                 proof = cand.get("evidence_proof")
                 proof_excerpt = proof.verbatim_excerpt if proof else cand.get("problem_symptom_matched")
 
-                # 3. AI-Crafted Personalized Outreach (using Gemini Flash Lite)
+                # 3. AI-Crafted Personalized Outreach (using Gemini or Groq)
                 outreach = await generate_tailored_outreach(
                     company_name=name,
                     full_name=top_dm.full_name,
                     role_title=top_dm.role_title,
                     problem_symptom_matched=cand.get("problem_symptom_matched", "workflow scaling"),
                     core_offering=brief.core_offering,
-                    evidence_excerpt=proof_excerpt
+                    evidence_excerpt=proof_excerpt,
+                    custom_provider=custom_provider,
+                    custom_api_key=custom_api_key,
+                    custom_model=custom_model
                 )
 
                 # Fit score calculation

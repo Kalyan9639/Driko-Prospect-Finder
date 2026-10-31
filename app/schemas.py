@@ -370,8 +370,39 @@ class ICPReport(BaseModel):
 # Request & Response Payloads
 # ---------------------------------------------------------------------------
 
+class ValidateKeyRequest(BaseModel):
+    provider: str = Field(..., description="LLM provider: 'gemini' or 'groq'")
+    api_key: str = Field(..., description="API key to validate")
+    model: Optional[str] = Field(None, description="Optional model identifier to test")
+
+
+class ValidateKeyResponse(BaseModel):
+    valid: bool
+    provider: str
+    model: str
+    message: str
+    error: Optional[str] = None
+
+
+class LLMStatusResponse(BaseModel):
+    configured_provider: str = "gemini"
+    configured_model: str = "gemini-2.5-flash-lite"
+    has_env_key: bool = False
+    default_key_status: str = "ok"  # "ok", "error", "not_configured"
+    default_key_error: Optional[str] = None
+    default_key_hint: Optional[str] = None
+    supported_custom_providers: List[str] = Field(default_factory=lambda: ["gemini", "groq"])
+    recommendation: str = (
+        "Not getting the best experience with the default model? "
+        "Add your own Gemini or Groq API key to unlock full AI reasoning, unblocked rate limits, and custom outreach personalization."
+    )
+
+
 class DistillBriefRequest(BaseModel):
     raw_brief: str = Field(..., min_length=15, description="Founder's raw text or voice transcript.")
+    custom_provider: Optional[str] = Field(None, description="Optional custom LLM provider ('gemini' or 'groq')")
+    custom_api_key: Optional[str] = Field(None, description="Optional user-supplied API key")
+    custom_model: Optional[str] = Field(None, description="Optional custom model override")
 
 
 class CompileICPRequest(BaseModel):
@@ -385,6 +416,9 @@ class CompileICPRequest(BaseModel):
     enable_live_grounding: bool = Field(True, description="Attempt Google Search Grounding with safe try/catch fallback.")
     sliding_time_window_days: Optional[int] = Field(None, description="Optional override for sliding time window cutoff in days.")
     target_prospect_count: Optional[int] = Field(None, description="Optional override for number of prospects to discover.")
+    custom_provider: Optional[str] = Field(None, description="Optional custom LLM provider ('gemini' or 'groq')")
+    custom_api_key: Optional[str] = Field(None, description="Optional user-supplied API key")
+    custom_model: Optional[str] = Field(None, description="Optional custom model override")
 
 
 class LeadStatusUpdateRequest(BaseModel):

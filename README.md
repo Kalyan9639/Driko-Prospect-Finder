@@ -84,9 +84,12 @@ Every prospect record contains an explicit evidence payload:
   - **Mom-Test Discovery Opener:** Non-leading, past-behavior discovery question.
 - **Token Efficiency:** Consumes under 300 tokens per prospect with sub-1.5s latency.
 
-### 5. Dual-Engine Resilience (Zero Downtime on 429 Quotas)
-- **Graceful Rate-Limit Handling:** When free-tier Gemini API keys encounter `429 RESOURCE_EXHAUSTED` or `503 High Demand`, the backend automatically falls back to its **Deterministic Python NLP Engine**.
-- The platform never crashes, hangs, or blocks user workflows.
+### 5. Multi-Provider BYOK Engine & Live Error Diagnostics (Gemini & Groq)
+- **Bring Your Own Key (BYOK):** Users can upload or paste their own API keys for **Google Gemini** (`gemini-2.5-flash-lite`, `gemini-2.5-flash`) or **Groq Cloud** (`llama-3.3-70b-versatile`, `llama-3.1-8b-instant`).
+- **File Upload & Parsing:** Supports drag-and-drop or browsing `.env`, `.txt`, and `.json` files to auto-detect and configure keys without tedious manual typing.
+- **Transparent Error Visibility:** If the server's default model throws an error (e.g., `400 API_KEY_INVALID`, `429 RESOURCE_EXHAUSTED`, or network isolation), the exact technical error message is captured and presented in an alert banner with clear guidance: *"Not getting the best experience with the default model? Add your own Gemini or Groq API key..."*
+- **100% Client-Side Privacy:** Custom user keys are stored strictly in client-side `localStorage` and passed directly for inference requests—never written to a backend database or logged.
+- **Dual-Engine Resilience:** If all AI providers fail or quota is exhausted, the backend seamlessly falls back to its deterministic Python NLP engine with zero crashes.
 
 ### 6. Model Context Protocol (MCP) Server for ChatGPT & Claude
 - Implements standard MCP 2.x via [app/mcp_server.py](file:///e:/Jupyter%20Notebook/ICP%20Lab/app/mcp_server.py).
@@ -173,19 +176,19 @@ The platform is fully containerized and configured for **Google Cloud Run (Free 
 * **Public Ingress:** `--allow-unauthenticated`
 
 ### Option 1: 1-Click Deployment via CLI (Recommended)
-Run the automated deployment script from PowerShell:
+Run the automated deployment script from PowerShell (pre-configured for `hireforge-ai` and `kriu-icp-lab`):
 ```powershell
-.\deploy.ps1 -ProjectId "YOUR_GCP_PROJECT_ID"
+.\deploy.ps1
 ```
 Or on Linux / macOS / Cloud Shell:
 ```bash
-chmod +x deploy.sh && ./deploy.sh "YOUR_GCP_PROJECT_ID"
+chmod +x deploy.sh && ./deploy.sh
 ```
 
-### Option 2: Automated CI/CD via Google Cloud Build
+### Option 2: Automated CI/CD via Google Cloud Build & Artifact Registry
 Trigger the pipeline using [cloudbuild.yaml](file:///e:/Jupyter%20Notebook/ICP%20Lab/cloudbuild.yaml):
 ```powershell
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_GEMINI_API_KEY="your_api_key_here"
+gcloud builds submit --config=cloudbuild.yaml --project=hireforge-ai --substitutions=_GEMINI_API_KEY="your_api_key_here"
 ```
 
 ---

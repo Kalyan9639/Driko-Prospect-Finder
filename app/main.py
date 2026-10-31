@@ -3,7 +3,7 @@ import json
 import asyncio
 from pathlib import Path
 from typing import Dict, Any, List, Optional
-from fastapi import FastAPI, HTTPException, Body, Response
+from fastapi import FastAPI, HTTPException, Body, Response, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, PlainTextResponse
@@ -16,8 +16,12 @@ from app.schemas import (
     ICPReport,
     LeadStatusUpdateRequest,
     ScrapeSourceRequest,
-    DiscoveredProspectCompany
+    DiscoveredProspectCompany,
+    ValidateKeyRequest,
+    ValidateKeyResponse,
+    LLMStatusResponse,
 )
+from app.services.llm_router import get_llm_status, validate_api_key
 from app.services.brief_distiller import distill_raw_brief
 from app.services.enrichment import gather_enrichment_signals
 from app.services.gemini_compiler import compile_icp_report
@@ -70,11 +74,16 @@ app.mount("/js", StaticFiles(directory=str(STATIC_DIR / "js")), name="js")
 # ---------------------------------------------------------------------------
 
 @app.get("/", response_class=FileResponse)
-async def read_index():
-    index_file = STATIC_DIR / "index.html"
-    if not index_file.exists():
-        raise HTTPException(status_code=404, detail="Landing page not found.")
-    return FileResponse(index_file)
+async def read_root_app():
+    """
+    When the backend runs, the root route opens the interactive GTM Workbench (app.html)
+    directly. The Portfolio + Product Landing Page (index.html) can be hosted separately
+    or accessed at /portfolio.
+    """
+    app_file = STATIC_DIR / "app.html"
+    if not app_file.exists():
+        raise HTTPException(status_code=404, detail="App workspace not found.")
+    return FileResponse(app_file)
 
 
 @app.get("/app", response_class=FileResponse)
@@ -85,28 +94,73 @@ async def read_app_workspace():
     return FileResponse(app_file)
 
 
+@app.get("/portfolio", response_class=FileResponse)
+@app.get("/landing", response_class=FileResponse)
+async def read_portfolio_landing():
+    index_file = STATIC_DIR / "index.html"
+    if not index_file.exists():
+        raise HTTPException(status_code=404, detail="Portfolio landing page not found.")
+    return FileResponse(index_file)
+
+
 # ---------------------------------------------------------------------------
 # Platform Diagnostics & Presets
 # ---------------------------------------------------------------------------
 
 @app.get("/api/health")
 async def health_check() -> Dict[str, Any]:
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    has_valid_key = bool(api_key and api_key != "your_gemini_api_key_here")
+    llm_info = get_llm_status()
     return {
         "status": "online",
-        "gemini_api_configured": has_valid_key,
-        "primary_model": "gemini-2.5-flash-lite",
+        "gemini_api_configured": llm_info["has_env_key"],
+        "primary_model": llm_info["configured_model"],
+        "default_key_status": llm_info["default_key_status"],
+        "default_key_error": llm_info["default_key_error"],
         "fallback_model": "deterministic_local_engine",
         "mcp_server_available": True,
         "unblocked_sources_count": len(get_all_unblocked_sources()),
-        "cache_enabled": os.getenv("ENABLE_CACHE", "true").lower() == "true"
+        "cache_enabled": os.getenv("ENABLE_CACHE", "true").lower() == "true",
+        "recommendation": llm_info["recommendation"]
     }
+
+
+@app.get("/api/llm-status", response_model=LLMStatusResponse)
+async def llm_status_endpoint():
+    """
+    Returns live operational status of the default configured LLM and any runtime errors
+    thrown by the current key.
+    """
+    return get_llm_status()
+
+
+@app.post("/api/validate-key", response_model=ValidateKeyResponse)
+async def validate_key_endpoint(payload: ValidateKeyRequest):
+    """
+    Validates a user-supplied API key against Google Gemini or Groq.
+    """
+    return await validate_api_key(
+        provider=payload.provider,
+        api_key=payload.api_key,
+        model=payload.model
+    )
 
 
 @app.get("/api/presets")
 async def get_presets() -> List[Dict[str, Any]]:
     return [
+        {
+            "id": "wispr_flow",
+            "name": "Wispr Flow — Voice-First AI Productivity & B2B Growth",
+            "industry": "AI Productivity & Developer Workflow",
+            "raw_brief": "We are scaling Wispr Flow, a voice-first dictation and AI productivity platform for high-output builders, software engineers, founders, and product teams in India and globally. We help engineers and operators speak architectural specs, code reviews, PR descriptions, and customer comms 4x faster than typing. We want to identify fast-growing tech startups, AI engineering teams, and developer communities in India and remote B2B orgs where documentation velocity is a bottleneck, while avoiding traditional slow-moving legacy enterprises.",
+            "target_customer_archetype": "Founders, CTOs & Staff Engineers",
+            "sample_urls": ["https://news.ycombinator.com/jobs"],
+            "suggested_keywords": [
+                "AI startup hiring engineers India Bangalore",
+                "developer productivity engineering velocity remote",
+                "founder product management workflow automation"
+            ]
+        },
         {
             "id": "kriu_hiring",
             "name": "KRIU — B2B Hiring & Talent Assessment",
@@ -210,14 +264,29 @@ async def scrape_source_endpoint(req: ScrapeSourceRequest):
 # ---------------------------------------------------------------------------
 
 @app.post("/api/distill-brief", response_model=DistilledBrief)
-async def distill_brief_endpoint(payload: DistillBriefRequest):
+async def distill_brief_endpoint(
+    payload: DistillBriefRequest,
+    x_custom_provider: Optional[str] = Header(None),
+    x_custom_api_key: Optional[str] = Header(None),
+    x_custom_model: Optional[str] = Header(None)
+):
     """
     Stage 1: Converts unstructured raw brief into a compact, strictly necessary
-    DistilledBrief JSON representation.
+    DistilledBrief JSON representation using Gemini, Groq, or deterministic fallback.
     """
     if len(payload.raw_brief.strip()) < 15:
         raise HTTPException(status_code=400, detail="Business brief must be at least 15 characters.")
-    return await distill_raw_brief(payload.raw_brief)
+
+    provider = payload.custom_provider or x_custom_provider
+    api_key = payload.custom_api_key or x_custom_api_key
+    model = payload.custom_model or x_custom_model
+
+    return await distill_raw_brief(
+        raw_brief=payload.raw_brief,
+        custom_provider=provider,
+        custom_api_key=api_key,
+        custom_model=model
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -225,11 +294,16 @@ async def distill_brief_endpoint(payload: DistillBriefRequest):
 # ---------------------------------------------------------------------------
 
 @app.post("/api/compile-icp", response_model=ICPReport)
-async def compile_icp_endpoint(payload: CompileICPRequest):
+async def compile_icp_endpoint(
+    payload: CompileICPRequest,
+    x_custom_provider: Optional[str] = Header(None),
+    x_custom_api_key: Optional[str] = Header(None),
+    x_custom_model: Optional[str] = Header(None)
+):
     """
     Executes the 5-Agent autonomous pipeline:
     1. Gathers non-blocking market pain signals (HN/StackExchange/URLs).
-    2. Runs Gemini ICP compiler (or deterministic fallback if requested).
+    2. Runs Gemini or Groq ICP compiler (or deterministic fallback if requested/error).
     3. Concurrently scouts 50 unblocked public sources to discover matching SMB companies.
     4. Crawls websites, harvests verified public emails, phones, and LinkedIn links.
     5. Synthesizes tailored Mom-Test and cold outreach copy.
@@ -238,8 +312,11 @@ async def compile_icp_endpoint(payload: CompileICPRequest):
     brief = payload.brief_json
     urls = [u.strip() for u in payload.urls if u.strip()]
     time_window = getattr(payload, "sliding_time_window_days", None) or getattr(brief, "time_window_days", 30) or 30
-
     target_count = getattr(payload, "target_prospect_count", None) or getattr(brief, "target_prospect_count", 8) or 8
+
+    provider = payload.custom_provider or x_custom_provider
+    api_key = payload.custom_api_key or x_custom_api_key
+    model = payload.custom_model or x_custom_model
 
     # Execute enrichment, compilation, and live prospect discovery concurrently
     enrich_task = gather_enrichment_signals(
@@ -252,7 +329,10 @@ async def compile_icp_endpoint(payload: CompileICPRequest):
         urls=urls,
         time_window_days=time_window,
         target_count=target_count,
-        enable_live_grounding=payload.enable_live_grounding
+        enable_live_grounding=payload.enable_live_grounding,
+        custom_provider=provider,
+        custom_api_key=api_key,
+        custom_model=model
     )
 
     (snippets, enrich_telemetry), prospects = await asyncio.gather(
@@ -265,7 +345,11 @@ async def compile_icp_endpoint(payload: CompileICPRequest):
         brief=brief,
         external_snippets=snippets,
         urls=urls,
-        force_refresh=payload.force_refresh
+        force_refresh=payload.force_refresh,
+        deterministic_mode=payload.deterministic_mode,
+        custom_provider=provider,
+        custom_api_key=api_key,
+        custom_model=model
     )
 
     # Attach discovered prospects and active sources to report

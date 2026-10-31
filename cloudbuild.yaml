@@ -1,0 +1,72 @@
+# Google Cloud Build pipeline for Kriu ICP Lab -> Google Cloud Run
+# Tailored for Artifact Registry in us-central1 (hireforge-ai / cloud-run-source-deploy)
+
+steps:
+  # Step 1: Build Docker container image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-t'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '-t'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}:latest'
+      - '.'
+
+  # Step 2: Push container image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-commit-tag'
+    args:
+      - 'push'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-latest-tag'
+    args:
+      - 'push'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}:latest'
+
+  # Step 3: Deploy image to Google Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloud-run'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '--region'
+      - '${_LOCATION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--cpu'
+      - '${_CPU}'
+      - '--memory'
+      - '${_MEMORY}'
+      - '--timeout'
+      - '${_TIMEOUT}'
+      - '--concurrency'
+      - '${_CONCURRENCY}'
+      - '--set-env-vars'
+      - 'GEMINI_API_KEY=${_GEMINI_API_KEY},GROQ_API_KEY=${_GROQ_API_KEY},GEMINI_MODEL=gemini-2.5-flash-lite,ENABLE_CACHE=true'
+
+# Default substitutions matching your exact Artifact Registry and service specifications
+substitutions:
+  _LOCATION: 'us-central1'
+  _REPO_NAME: 'cloud-run-source-deploy'
+  _SERVICE_NAME: 'kriu-icp-lab'
+  _CPU: '2'
+  _MEMORY: '2Gi'
+  _TIMEOUT: '300s'
+  _CONCURRENCY: '80'
+  _GEMINI_API_KEY: ''
+  _GROQ_API_KEY: ''
+
+images:
+  - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
+  - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_SERVICE_NAME}:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

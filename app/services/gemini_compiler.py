@@ -219,11 +219,15 @@ async def compile_icp_report(
     brief: DistilledBrief,
     external_snippets: List[ExternalEvidenceSnippet],
     urls: List[str],
-    force_refresh: bool = False
+    force_refresh: bool = False,
+    deterministic_mode: bool = False,
+    custom_provider: Optional[str] = None,
+    custom_api_key: Optional[str] = None,
+    custom_model: Optional[str] = None
 ) -> ICPReport:
     """
-    Compiles the full ICP Report using Gemini with clean JSON schemas (no additionalProperties)
-    and a multi-model waterfall to effortlessly handle 503 high-demand spikes.
+    Compiles the full ICP Report using Gemini or Groq via LLM Router,
+    with clean JSON schemas and high-fidelity deterministic fallback.
     """
     start_time = time.time()
     cache_key = _generate_cache_key(brief, urls)
@@ -245,19 +249,10 @@ async def compile_icp_report(
         "external_snippets_count": len(external_snippets),
     }
 
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    if not api_key or api_key == "your_gemini_api_key_here":
+    if deterministic_mode:
         fallback_report = _mock_icp_fallback(brief, external_snippets, telemetry)
         fallback_report.telemetry["elapsed_seconds"] = round(time.time() - start_time, 2)
         return fallback_report
-
-    from google import genai
-    from google.genai import types
-
-    client = genai.Client(api_key=api_key)
-
-    # Sanitize schema to strictly eliminate any additionalProperties
-    safe_schema = get_gemini_safe_schema(LLMCompiledICP)
 
     # Format the prompt context
     external_context_block = "\n".join([
@@ -277,83 +272,55 @@ REAL-WORLD EXTERNAL SIGNALS (Grounded Research):
 Produce the complete LLMCompiledICP strictly matching the JSON schema.
 """
 
-    config = types.GenerateContentConfig(
-        system_instruction=SYSTEM_PROMPT_COMPILER,
-        response_mime_type="application/json",
-        response_schema=safe_schema,
-        temperature=0.2,
+    from app.services.llm_router import route_llm_json
+
+    data, error, router_telemetry = await route_llm_json(
+        prompt=user_prompt,
+        system_prompt=SYSTEM_PROMPT_COMPILER,
+        schema_cls=LLMCompiledICP,
+        custom_provider=custom_provider,
+        custom_api_key=custom_api_key,
+        custom_model=custom_model,
+        temperature=0.2
     )
 
-    model_name = "gemini-2.5-flash-lite"
-    response_text = ""
-    used_model = model_name
-
-    for attempt in range(2):
-        try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=user_prompt,
-                config=config,
-            )
-            response_text = response.text or ""
-            if response.usage_metadata:
-                telemetry["prompt_tokens"] = response.usage_metadata.prompt_token_count
-                telemetry["completion_tokens"] = response.usage_metadata.candidates_token_count
-                telemetry["total_tokens"] = response.usage_metadata.total_token_count
-            break  # Successful generation
-        except Exception as e:
-            err_str = str(e)
-            is_503 = "503" in err_str or "UNAVAILABLE" in err_str or "high demand" in err_str
-            is_429 = "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str
-            if is_503 and attempt == 0:
-                print(f"[Compiler] Model {model_name} busy (503). Retrying after 1.5s...")
-                await asyncio.sleep(1.5)
-                continue
-            elif is_429:
-                print(f"[Compiler] Model {model_name} rate limit reached (429). Using deterministic compiler.")
-                break
-            else:
-                print(f"[Compiler] Model {model_name} error: {err_str[:120]}. Using deterministic compiler.")
-                break
-
-    if not response_text:
-        print("[Compiler] Using high-precision deterministic compiler.")
-        fallback_report = _mock_icp_fallback(brief, external_snippets, telemetry)
-        fallback_report.telemetry["elapsed_seconds"] = round(time.time() - start_time, 2)
-        return fallback_report
-
-    telemetry["model_used"] = used_model
+    telemetry.update(router_telemetry)
     telemetry["elapsed_seconds"] = round(time.time() - start_time, 2)
 
-    try:
-        parsed_json = json.loads(response_text)
-        compiled_llm = LLMCompiledICP(**parsed_json)
-
-        # Build final ICPReport
-        report = ICPReport(
-            business_summary=compiled_llm.business_summary,
-            icp_statement=compiled_llm.icp_statement,
-            offering=compiled_llm.offering,
-            target_entity=compiled_llm.target_entity,
-            geography=compiled_llm.geography,
-            ledger_items=compiled_llm.ledger_items,
-            unknowns=compiled_llm.unknowns,
-            buyer_personas=compiled_llm.buyer_personas,
-            validation_questions=compiled_llm.validation_questions,
-            validation_plan=compiled_llm.validation_plan,
-            external_signals=compiled_llm.external_signals or external_snippets,
-            telemetry=telemetry
-        )
-
-        # Save to disk cache
+    if data:
         try:
-            cache_file.write_text(report.model_dump_json(indent=2), encoding="utf-8")
-        except Exception as ce:
-            print(f"[Compiler] Could not write cache file: {ce}")
+            compiled_llm = LLMCompiledICP(**data)
+            report = ICPReport(
+                business_summary=compiled_llm.business_summary,
+                icp_statement=compiled_llm.icp_statement,
+                offering=compiled_llm.offering,
+                target_entity=compiled_llm.target_entity,
+                geography=compiled_llm.geography,
+                ledger_items=compiled_llm.ledger_items,
+                unknowns=compiled_llm.unknowns,
+                buyer_personas=compiled_llm.buyer_personas,
+                validation_questions=compiled_llm.validation_questions,
+                validation_plan=compiled_llm.validation_plan,
+                external_signals=compiled_llm.external_signals or external_snippets,
+                telemetry=telemetry
+            )
 
-        return report
-    except Exception as parse_err:
-        print(f"[Compiler] Schema parse error: {parse_err}. Reverting to fallback.")
-        fallback_report = _mock_icp_fallback(brief, external_snippets, telemetry)
-        fallback_report.telemetry["elapsed_seconds"] = round(time.time() - start_time, 2)
-        return fallback_report
+            # Save to disk cache
+            try:
+                cache_file.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+            except Exception as ce:
+                print(f"[Compiler] Could not write cache file: {ce}")
+
+            return report
+        except Exception as parse_err:
+            print(f"[Compiler] Schema parse error: {parse_err}. Reverting to fallback.")
+            error = f"Schema validation error: {parse_err}"
+
+    # If LLM failed, record error in telemetry and return deterministic report
+    if error:
+        telemetry["model_error"] = error
+        print(f"[Compiler] LLM execution notice: {error}. Using high-precision deterministic compiler.")
+
+    fallback_report = _mock_icp_fallback(brief, external_snippets, telemetry)
+    fallback_report.telemetry["elapsed_seconds"] = round(time.time() - start_time, 2)
+    return fallback_report

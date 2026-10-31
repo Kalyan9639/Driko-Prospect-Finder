@@ -9,7 +9,7 @@
   <script>
     if (window.location.protocol === "file:") {
       document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll('a[href="/"]').forEach(a => a.href = "index.html");
+        document.querySelectorAll('a[href="/portfolio"]').forEach(a => a.href = "index.html");
       });
     }
   </script>
@@ -25,15 +25,46 @@
         </a>
         <span class="brand-badge" id="system-model-badge">Agentic OSINT • FastMCP</span>
       </div>
-      <div style="display: flex; align-items: center; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
         <span id="health-status-indicator" class="mono-voice" style="font-size: 0.8rem; color: var(--status-user-provided);">● 52 Sources Ready</span>
-        <a href="/" class="btn btn-secondary btn-sm">&larr; Case Study & Home</a>
+        <button id="btn-open-api-key-modal" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem;">
+          <span id="api-key-status-dot">🔑</span>
+          <span id="api-key-status-text">AI API Key</span>
+        </button>
+        <a href="/portfolio" class="btn btn-secondary btn-sm">&larr; Portfolio &amp; Case Study</a>
       </div>
     </div>
   </header>
 
   <main class="workspace-wrap">
     <div class="container">
+
+      <!-- Hidden file input for direct file upload -->
+      <input type="file" id="api-key-file-input" accept=".env,.txt,.json" style="display: none;">
+
+      <!-- Model Health & BYOK Alert Banner -->
+      <div id="byok-alert-banner" class="byok-banner" style="display: none;">
+        <div class="byok-banner-content">
+          <div class="byok-banner-icon" id="byok-banner-icon">⚠️</div>
+          <div class="byok-banner-body">
+            <div class="byok-banner-title" id="byok-banner-title">
+              Not getting the best experience with the default model?
+            </div>
+            <div class="byok-banner-text" id="byok-banner-text">
+              Add your own Google Gemini or Groq API key to unlock full AI reasoning, unblocked rate limits, and custom outreach personalization.
+            </div>
+            <div class="byok-error-box" id="byok-error-box" style="display: none;">
+              <span class="mono-voice" style="font-weight: 600; font-size: 0.75rem; color: #f87171;">Current Model Error:</span>
+              <code id="byok-error-message" class="byok-error-code"></code>
+            </div>
+          </div>
+        </div>
+        <div class="byok-banner-actions">
+          <button id="btn-banner-add-key" class="btn btn-primary btn-sm">🔑 Add Your API Key</button>
+          <button id="btn-banner-upload-file" class="btn btn-secondary btn-sm">📁 Upload .env / Key</button>
+          <button id="btn-banner-dismiss" class="btn-icon-dismiss" title="Dismiss">&times;</button>
+        </div>
+      </div>
 
       <!-- Workbench Navigation Tabs -->
       <nav class="workbench-tabs" role="tablist">
@@ -67,6 +98,7 @@
             </div>
             <div class="preset-selector-bar" style="margin-bottom: 0;">
               <span class="mono-voice" style="font-size: 0.8rem; color: var(--ink-muted); margin-right: 0.5rem; align-self: center;">Load Preset:</span>
+              <button class="preset-chip" data-preset="wispr_flow">Wispr Flow (Voice AI)</button>
               <button class="preset-chip" data-preset="kriu_hiring">KRIU (Hiring Tech)</button>
               <button class="preset-chip" data-preset="solar_telangana">Commercial Solar</button>
               <button class="preset-chip" data-preset="workflow_automation">Logistics Automation</button>
@@ -595,6 +627,123 @@
           <span style="font-size: 0.75rem; color: var(--ink-muted); display: block; margin-top: 0.35rem;">Non-leading past-experience question for exploratory calls.</span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Custom API Key & AI Engine Configuration Modal -->
+  <div class="modal-overlay" id="api-key-modal-overlay">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <div>
+          <span class="step-indicator" style="margin-bottom: 0.25rem; display: inline-block;">AI ENGINE SETTINGS</span>
+          <h3 style="font-size: 1.25rem; margin-top: 0.25rem;">Bring Your Own API Key (BYOK)</h3>
+        </div>
+        <button id="btn-close-api-key-modal" class="btn btn-secondary btn-sm">&times;</button>
+      </div>
+
+      <!-- Current Server Key Status / Error Notice inside Modal -->
+      <div id="modal-llm-status-box" class="modal-status-callout" style="margin-bottom: 1.25rem;">
+        <!-- Dynamically filled: shows if default key is working or failing -->
+      </div>
+
+      <!-- Provider Selector Cards -->
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">
+          Select AI Provider:
+        </label>
+        <div class="provider-switch-grid">
+          <button type="button" class="provider-card active" data-provider="groq" id="provider-card-groq">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
+              <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">⚡ Groq Cloud</span>
+              <span class="badge-pill-cyan">Ultra Fast</span>
+            </div>
+            <div style="font-size: 0.775rem; color: var(--ink-secondary);">Llama 3.3 70B & 3.1 8B. Blazing sub-second inference. Free tier available.</div>
+          </button>
+          <button type="button" class="provider-card" data-provider="gemini" id="provider-card-gemini">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
+              <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">✨ Google Gemini</span>
+              <span class="badge-pill-cyan">Google AI</span>
+            </div>
+            <div style="font-size: 0.775rem; color: var(--ink-secondary);">Gemini 2.5 Flash Lite & 2.5 Flash. Deep reasoning. Free tier available.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Model Selection Dropdown -->
+      <div style="margin-bottom: 1.25rem;">
+        <label for="custom-model-select" style="display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.4rem;">
+          Model Selection:
+        </label>
+        <select id="custom-model-select" class="bridge-textarea" style="min-height: 40px; padding: 0.4rem 0.75rem;">
+          <!-- Dynamically populated based on selected provider -->
+        </select>
+      </div>
+
+      <!-- File Upload Dropzone / Quick Import -->
+      <div style="margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <label style="font-weight: 600; font-size: 0.875rem;">Upload Key File or Paste Key Below:</label>
+          <span style="font-size: 0.75rem; color: var(--ink-muted);">Accepts .env, .txt, .json</span>
+        </div>
+        <div id="api-key-dropzone" class="dropzone-box">
+          <input type="file" id="api-key-file-upload" accept=".env,.txt,.json" style="display: none;">
+          <span style="font-size: 1.25rem; margin-bottom: 0.25rem; display: block;">📁</span>
+          <div style="font-size: 0.85rem; color: var(--ink-secondary);">
+            <a href="javascript:void(0)" id="link-browse-file" style="color: var(--accent-cyan); text-decoration: underline;">Choose a file</a> or drag and drop your key/.env file here
+          </div>
+          <div style="font-size: 0.725rem; color: var(--ink-muted); margin-top: 0.25rem;">
+            Auto-detects GEMINI_API_KEY, GROQ_API_KEY, or raw keys
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Input with Show/Hide Toggle -->
+      <div style="margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <label for="custom-key-input" style="font-weight: 600; font-size: 0.875rem;">
+            <span id="key-input-label">API Key:</span>
+          </label>
+          <a id="get-api-key-link" href="https://console.groq.com/keys" target="_blank" rel="noopener" style="font-size: 0.775rem; color: var(--accent-cyan); text-decoration: underline;">
+            Get a free Groq key &nearr;
+          </a>
+        </div>
+        <div style="position: relative;">
+          <input type="password" id="custom-key-input" class="bridge-textarea" style="min-height: 42px; padding: 0.5rem 2.8rem 0.5rem 0.75rem; font-family: var(--font-mono); font-size: 0.85rem;" placeholder="gsk_...">
+          <button type="button" id="btn-toggle-key-visibility" class="btn-input-icon" title="Toggle visibility">👁️</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.35rem;">
+          <span id="key-format-hint" style="font-size: 0.725rem; color: var(--ink-muted);">Groq keys start with 'gsk_'</span>
+          <span id="active-key-indicator" style="font-size: 0.725rem; color: var(--status-user-provided); display: none;">✓ Saved in browser</span>
+        </div>
+      </div>
+
+      <!-- Live Test Feedback Box -->
+      <div id="key-validation-feedback" class="validation-feedback-box" style="display: none;"></div>
+
+      <!-- Security / Privacy Assurance -->
+      <div class="privacy-notice-box" style="margin-bottom: 1.25rem;">
+        <span>🔒</span>
+        <span>
+          <strong>Privacy Guarantee:</strong> Your API key is stored strictly in your browser's local storage and used directly for inference requests. It is never logged or stored in any database.
+        </span>
+      </div>
+
+      <!-- Modal Action Buttons -->
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <button type="button" id="btn-reset-default-key" class="btn btn-secondary btn-sm" style="color: var(--status-unknown);">
+          Revert to Server Default
+        </button>
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" id="btn-test-key" class="btn btn-secondary btn-sm">
+            <span id="test-key-text">⚡ Test Handshake</span>
+            <span id="test-key-spinner" style="display: none;">Testing...</span>
+          </button>
+          <button type="button" id="btn-save-custom-key" class="btn btn-primary btn-sm">
+            Save & Activate Key
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 

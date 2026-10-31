@@ -22,7 +22,22 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedScale: "Small (2-50 employees)",
     selectedTimeDays: 30,
     currentOutreachLead: null,
-    currentCampaignId: null
+    currentCampaignId: null,
+    customProvider: localStorage.getItem("icp_custom_provider") || "groq",
+    customApiKey: localStorage.getItem("icp_custom_api_key") || "",
+    customModel: localStorage.getItem("icp_custom_model") || "llama-3.3-70b-versatile",
+    serverLLMStatus: null
+  };
+
+  const PROVIDER_MODELS = {
+    groq: [
+      { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B Versatile (Recommended • Fastest)" },
+      { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B Instant (Ultra-low latency)" }
+    ],
+    gemini: [
+      { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite (Recommended • Free Tier)" },
+      { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash (Deep reasoning)" }
+    ]
   };
 
   // DOM Elements
@@ -30,6 +45,46 @@ document.addEventListener("DOMContentLoaded", () => {
   const customArchetypeInput = document.getElementById("custom-archetype-input");
   const timeSlider = document.getElementById("time-window-slider");
   const sliderReadout = document.getElementById("slider-readout");
+
+  // BYOK & API Key Management Elements
+  const btnOpenApiKeyModal = document.getElementById("btn-open-api-key-modal");
+  const apiKeyModal = document.getElementById("api-key-modal-overlay");
+  const btnCloseApiKeyModal = document.getElementById("btn-close-api-key-modal");
+  const apiKeyStatusDot = document.getElementById("api-key-status-dot");
+  const apiKeyStatusText = document.getElementById("api-key-status-text");
+
+  const byokAlertBanner = document.getElementById("byok-alert-banner");
+  const byokBannerIcon = document.getElementById("byok-banner-icon");
+  const byokBannerTitle = document.getElementById("byok-banner-title");
+  const byokBannerText = document.getElementById("byok-banner-text");
+  const byokErrorBox = document.getElementById("byok-error-box");
+  const byokErrorMessage = document.getElementById("byok-error-message");
+  const btnBannerAddKey = document.getElementById("btn-banner-add-key");
+  const btnBannerUploadFile = document.getElementById("btn-banner-upload-file");
+  const btnBannerDismiss = document.getElementById("btn-banner-dismiss");
+
+  const modalLlmStatusBox = document.getElementById("modal-llm-status-box");
+  const providerCardGroq = document.getElementById("provider-card-groq");
+  const providerCardGemini = document.getElementById("provider-card-gemini");
+  const customModelSelect = document.getElementById("custom-model-select");
+  const customKeyInput = document.getElementById("custom-key-input");
+  const btnToggleKeyVisibility = document.getElementById("btn-toggle-key-visibility");
+  const keyInputLabel = document.getElementById("key-input-label");
+  const getApiKeyLink = document.getElementById("get-api-key-link");
+  const keyFormatHint = document.getElementById("key-format-hint");
+  const activeKeyIndicator = document.getElementById("active-key-indicator");
+  const keyValidationFeedback = document.getElementById("key-validation-feedback");
+
+  const btnTestKey = document.getElementById("btn-test-key");
+  const testKeyText = document.getElementById("test-key-text");
+  const testKeySpinner = document.getElementById("test-key-spinner");
+  const btnSaveCustomKey = document.getElementById("btn-save-custom-key");
+  const btnResetDefaultKey = document.getElementById("btn-reset-default-key");
+
+  const apiKeyDropzone = document.getElementById("api-key-dropzone");
+  const apiKeyFileUpload = document.getElementById("api-key-file-upload");
+  const linkBrowseFile = document.getElementById("link-browse-file");
+  const apiKeyFileInput = document.getElementById("api-key-file-input");
 
   const btnDistillBrief = document.getElementById("btn-distill-brief");
   const distillBtnText = document.getElementById("distill-btn-text");
@@ -81,10 +136,492 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1. Initial Setup & Event Listeners
   // ---------------------------------------------------------------------------
 
+  function getCustomHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    if (state.customApiKey && state.customApiKey.trim()) {
+      headers["X-Custom-Provider"] = state.customProvider;
+      headers["X-Custom-Api-Key"] = state.customApiKey.trim();
+      if (state.customModel) {
+        headers["X-Custom-Model"] = state.customModel;
+      }
+    }
+    return headers;
+  }
+
+  function getCustomPayloadFields() {
+    if (state.customApiKey && state.customApiKey.trim()) {
+      return {
+        custom_provider: state.customProvider,
+        custom_api_key: state.customApiKey.trim(),
+        custom_model: state.customModel
+      };
+    }
+    return {};
+  }
+
+  function setupBYOK() {
+    // Open Modal
+    if (btnOpenApiKeyModal) {
+      btnOpenApiKeyModal.addEventListener("click", () => openApiKeyModal());
+    }
+    if (btnCloseApiKeyModal) {
+      btnCloseApiKeyModal.addEventListener("click", () => closeApiKeyModal());
+    }
+    if (apiKeyModal) {
+      apiKeyModal.addEventListener("click", (e) => {
+        if (e.target === apiKeyModal) closeApiKeyModal();
+      });
+    }
+
+    // Banner Actions
+    if (btnBannerAddKey) {
+      btnBannerAddKey.addEventListener("click", () => openApiKeyModal());
+    }
+    if (btnBannerUploadFile) {
+      btnBannerUploadFile.addEventListener("click", () => {
+        if (apiKeyFileInput) apiKeyFileInput.click();
+      });
+    }
+    if (btnBannerDismiss) {
+      btnBannerDismiss.addEventListener("click", () => {
+        if (byokAlertBanner) byokAlertBanner.style.display = "none";
+        sessionStorage.setItem("icp_byok_banner_dismissed", "true");
+      });
+    }
+
+    // Provider Cards
+    if (providerCardGroq) {
+      providerCardGroq.addEventListener("click", () => switchProvider("groq"));
+    }
+    if (providerCardGemini) {
+      providerCardGemini.addEventListener("click", () => switchProvider("gemini"));
+    }
+
+    // Model Select
+    if (customModelSelect) {
+      customModelSelect.addEventListener("change", (e) => {
+        state.customModel = e.target.value;
+      });
+    }
+
+    // Password Visibility Toggle
+    if (btnToggleKeyVisibility && customKeyInput) {
+      btnToggleKeyVisibility.addEventListener("click", () => {
+        const isPassword = customKeyInput.type === "password";
+        customKeyInput.type = isPassword ? "text" : "password";
+        btnToggleKeyVisibility.textContent = isPassword ? "🙈" : "👁️";
+      });
+    }
+
+    // File Upload Handlers (Modal dropzone & Hidden inputs)
+    if (linkBrowseFile && apiKeyFileUpload) {
+      linkBrowseFile.addEventListener("click", () => apiKeyFileUpload.click());
+    }
+    if (apiKeyDropzone) {
+      apiKeyDropzone.addEventListener("click", (e) => {
+        if (e.target !== linkBrowseFile && apiKeyFileUpload) apiKeyFileUpload.click();
+      });
+      apiKeyDropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        apiKeyDropzone.classList.add("dragover");
+      });
+      apiKeyDropzone.addEventListener("dragleave", () => {
+        apiKeyDropzone.classList.remove("dragover");
+      });
+      apiKeyDropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        apiKeyDropzone.classList.remove("dragover");
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleKeyFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+    if (apiKeyFileUpload) {
+      apiKeyFileUpload.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleKeyFile(e.target.files[0]);
+        }
+      });
+    }
+    if (apiKeyFileInput) {
+      apiKeyFileInput.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleKeyFile(e.target.files[0]);
+          openApiKeyModal();
+        }
+      });
+    }
+
+    // Key Validation Handshake
+    if (btnTestKey) {
+      btnTestKey.addEventListener("click", testCurrentKeyHandshake);
+    }
+
+    // Save Key
+    if (btnSaveCustomKey) {
+      btnSaveCustomKey.addEventListener("click", saveAndActivateKey);
+    }
+
+    // Reset to Default Key
+    if (btnResetDefaultKey) {
+      btnResetDefaultKey.addEventListener("click", resetToDefaultKey);
+    }
+
+    // Initialize provider and model state
+    switchProvider(state.customProvider, false);
+  }
+
+  function openApiKeyModal() {
+    if (!apiKeyModal) return;
+    switchProvider(state.customProvider, false);
+    if (customKeyInput) customKeyInput.value = state.customApiKey || "";
+    renderModalStatusBox();
+    if (keyValidationFeedback) keyValidationFeedback.style.display = "none";
+    if (activeKeyIndicator) {
+      activeKeyIndicator.style.display = state.customApiKey ? "inline" : "none";
+    }
+    apiKeyModal.classList.add("active");
+  }
+
+  function closeApiKeyModal() {
+    if (!apiKeyModal) return;
+    apiKeyModal.classList.remove("active");
+  }
+
+  function switchProvider(provider, clearFeedback = true) {
+    state.customProvider = provider;
+    if (providerCardGroq && providerCardGemini) {
+      providerCardGroq.classList.toggle("active", provider === "groq");
+      providerCardGemini.classList.toggle("active", provider === "gemini");
+    }
+
+    // Populate model options
+    if (customModelSelect) {
+      customModelSelect.innerHTML = "";
+      const models = PROVIDER_MODELS[provider] || [];
+      models.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.name;
+        customModelSelect.appendChild(opt);
+      });
+
+      // Maintain or default selected model
+      const validIds = models.map(m => m.id);
+      if (!validIds.includes(state.customModel)) {
+        state.customModel = models[0]?.id || "";
+      }
+      customModelSelect.value = state.customModel;
+    }
+
+    // Update hints & helper links
+    if (provider === "groq") {
+      if (keyInputLabel) keyInputLabel.textContent = "Groq Cloud API Key:";
+      if (getApiKeyLink) {
+        getApiKeyLink.href = "https://console.groq.com/keys";
+        getApiKeyLink.textContent = "Get free Groq key ↗";
+      }
+      if (keyFormatHint) keyFormatHint.textContent = "Groq keys start with 'gsk_'";
+      if (customKeyInput) customKeyInput.placeholder = "gsk_...";
+    } else {
+      if (keyInputLabel) keyInputLabel.textContent = "Google Gemini API Key:";
+      if (getApiKeyLink) {
+        getApiKeyLink.href = "https://aistudio.google.com/app/apikey";
+        getApiKeyLink.textContent = "Get free Gemini key ↗";
+      }
+      if (keyFormatHint) keyFormatHint.textContent = "Gemini keys start with 'AIzaSy...'";
+      if (customKeyInput) customKeyInput.placeholder = "AIzaSy...";
+    }
+
+    if (clearFeedback && keyValidationFeedback) {
+      keyValidationFeedback.style.display = "none";
+    }
+  }
+
+  function handleKeyFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      let detectedKey = "";
+      let detectedProvider = state.customProvider;
+
+      // 1. Try parsing JSON
+      try {
+        const json = JSON.parse(text);
+        if (json.groq_api_key || json.GROQ_API_KEY) {
+          detectedKey = json.groq_api_key || json.GROQ_API_KEY;
+          detectedProvider = "groq";
+        } else if (json.gemini_api_key || json.GEMINI_API_KEY) {
+          detectedKey = json.gemini_api_key || json.GEMINI_API_KEY;
+          detectedProvider = "gemini";
+        } else if (json.apiKey || json.api_key) {
+          detectedKey = json.apiKey || json.api_key;
+        }
+      } catch (err) {
+        // Not JSON, continue to .env / line parsing
+      }
+
+      // 2. Try parsing .env lines
+      if (!detectedKey) {
+        const lines = text.split(/\r?\n/);
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith("#") || !trimmed) continue;
+          if (trimmed.startsWith("GROQ_API_KEY=")) {
+            detectedKey = trimmed.split("=")[1].replace(/["']/g, "").trim();
+            detectedProvider = "groq";
+            break;
+          } else if (trimmed.startsWith("GEMINI_API_KEY=")) {
+            detectedKey = trimmed.split("=")[1].replace(/["']/g, "").trim();
+            detectedProvider = "gemini";
+            break;
+          } else if (trimmed.includes("KEY=") || trimmed.includes("API=")) {
+            const val = trimmed.split("=")[1].replace(/["']/g, "").trim();
+            if (val.length > 20) {
+              detectedKey = val;
+              break;
+            }
+          }
+        }
+      }
+
+      // 3. Fallback to raw text
+      if (!detectedKey) {
+        const clean = text.trim();
+        if (clean.length > 15 && clean.length < 150) {
+          detectedKey = clean;
+        }
+      }
+
+      if (detectedKey) {
+        // Auto-detect provider if key starts with standard prefix
+        if (detectedKey.startsWith("gsk_")) {
+          detectedProvider = "groq";
+        } else if (detectedKey.startsWith("AIza")) {
+          detectedProvider = "gemini";
+        }
+
+        switchProvider(detectedProvider, false);
+        if (customKeyInput) customKeyInput.value = detectedKey;
+
+        if (keyValidationFeedback) {
+          keyValidationFeedback.className = "validation-feedback-box success";
+          keyValidationFeedback.style.display = "block";
+          keyValidationFeedback.innerHTML = `<strong>File Imported!</strong> Extracted key from <code>${file.name}</code> for <strong>${detectedProvider.toUpperCase()}</strong>. Click <em>"Test Handshake"</em> to verify.`;
+        }
+      } else {
+        if (keyValidationFeedback) {
+          keyValidationFeedback.className = "validation-feedback-box error";
+          keyValidationFeedback.style.display = "block";
+          keyValidationFeedback.textContent = `Could not find a valid API key in ${file.name}. Ensure it contains GROQ_API_KEY or GEMINI_API_KEY.`;
+        }
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  async function testCurrentKeyHandshake() {
+    const key = (customKeyInput?.value || "").trim();
+    if (!key) {
+      if (keyValidationFeedback) {
+        keyValidationFeedback.className = "validation-feedback-box error";
+        keyValidationFeedback.style.display = "block";
+        keyValidationFeedback.textContent = "Please enter or paste an API key first.";
+      }
+      return;
+    }
+
+    if (testKeyText) testKeyText.style.display = "none";
+    if (testKeySpinner) testKeySpinner.style.display = "inline";
+    if (btnTestKey) btnTestKey.disabled = true;
+
+    try {
+      const res = await fetch("/api/validate-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: state.customProvider,
+          api_key: key,
+          model: customModelSelect?.value || state.customModel
+        })
+      });
+
+      const data = await res.json();
+      if (keyValidationFeedback) {
+        keyValidationFeedback.style.display = "block";
+        if (data.valid) {
+          keyValidationFeedback.className = "validation-feedback-box success";
+          keyValidationFeedback.innerHTML = `<strong>✓ Verification Succeeded:</strong> ${data.message}`;
+        } else {
+          keyValidationFeedback.className = "validation-feedback-box error";
+          keyValidationFeedback.innerHTML = `<strong>✕ Verification Notice:</strong> ${data.message || data.error}`;
+        }
+      }
+    } catch (err) {
+      if (keyValidationFeedback) {
+        keyValidationFeedback.className = "validation-feedback-box error";
+        keyValidationFeedback.style.display = "block";
+        keyValidationFeedback.textContent = `Validation request error: ${err.message}`;
+      }
+    } finally {
+      if (testKeyText) testKeyText.style.display = "inline";
+      if (testKeySpinner) testKeySpinner.style.display = "none";
+      if (btnTestKey) btnTestKey.disabled = false;
+    }
+  }
+
+  function saveAndActivateKey() {
+    const key = (customKeyInput?.value || "").trim();
+    if (!key) {
+      if (keyValidationFeedback) {
+        keyValidationFeedback.className = "validation-feedback-box error";
+        keyValidationFeedback.style.display = "block";
+        keyValidationFeedback.textContent = "Cannot activate an empty API key.";
+      }
+      return;
+    }
+
+    state.customApiKey = key;
+    state.customModel = customModelSelect?.value || state.customModel;
+
+    localStorage.setItem("icp_custom_provider", state.customProvider);
+    localStorage.setItem("icp_custom_api_key", state.customApiKey);
+    localStorage.setItem("icp_custom_model", state.customModel);
+
+    updateLLMUI();
+    closeApiKeyModal();
+
+    // Re-check health and status
+    checkLLMStatus();
+  }
+
+  function resetToDefaultKey() {
+    state.customApiKey = "";
+    localStorage.removeItem("icp_custom_provider");
+    localStorage.removeItem("icp_custom_api_key");
+    localStorage.removeItem("icp_custom_model");
+
+    if (customKeyInput) customKeyInput.value = "";
+    if (activeKeyIndicator) activeKeyIndicator.style.display = "none";
+
+    updateLLMUI();
+    renderModalStatusBox();
+
+    if (keyValidationFeedback) {
+      keyValidationFeedback.className = "validation-feedback-box success";
+      keyValidationFeedback.style.display = "block";
+      keyValidationFeedback.textContent = "Reverted to server default configuration.";
+    }
+
+    checkLLMStatus();
+  }
+
+  function renderModalStatusBox() {
+    if (!modalLlmStatusBox) return;
+    const status = state.serverLLMStatus;
+
+    if (state.customApiKey) {
+      modalLlmStatusBox.className = "modal-status-callout status-ok";
+      modalLlmStatusBox.innerHTML = `
+        <div style="font-weight: 600; color: #a7f3d0; margin-bottom: 0.2rem;">🟢 Custom User API Key Active</div>
+        <div>Routing to <strong>${state.customProvider.toUpperCase()} (${state.customModel})</strong> with client-side authentication.</div>
+      `;
+    } else if (status?.default_key_status === "error" || status?.default_key_error) {
+      modalLlmStatusBox.className = "modal-status-callout status-error";
+      modalLlmStatusBox.innerHTML = `
+        <div style="font-weight: 600; color: #f87171; margin-bottom: 0.25rem;">⚠️ Default Server Key Error</div>
+        <div style="font-size: 0.8rem; margin-bottom: 0.35rem;"><code>${status.default_key_error}</code></div>
+        <div style="font-size: 0.775rem; color: var(--ink-secondary);">Add your own Groq or Gemini key below to bypass this error and unlock full AI generation.</div>
+      `;
+    } else if (status?.default_key_status === "not_configured") {
+      modalLlmStatusBox.className = "modal-status-callout status-neutral";
+      modalLlmStatusBox.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 0.2rem;">ℹ️ Server Running in Deterministic Mode</div>
+        <div>No default GEMINI_API_KEY is configured on the server. Add your own key below to activate AI synthesis.</div>
+      `;
+    } else {
+      modalLlmStatusBox.className = "modal-status-callout status-neutral";
+      modalLlmStatusBox.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 0.2rem;">Server Default: Gemini (${status?.configured_model || '2.5 Flash Lite'})</div>
+        <div>Add your own key below for higher rate limits, custom models (Groq/Gemini), and dedicated quotas.</div>
+      `;
+    }
+  }
+
+  async function checkLLMStatus() {
+    try {
+      const res = await fetch("/api/llm-status");
+      if (res.ok) {
+        state.serverLLMStatus = await res.json();
+        updateLLMUI();
+      }
+    } catch (e) {
+      console.warn("LLM status fetch error:", e);
+    }
+  }
+
+  function updateLLMUI() {
+    const status = state.serverLLMStatus;
+    const badge = document.getElementById("system-model-badge");
+
+    // 1. Navigation Status Button & Header Badge
+    if (state.customApiKey && state.customApiKey.trim()) {
+      if (apiKeyStatusDot) apiKeyStatusDot.textContent = "🟢";
+      if (apiKeyStatusText) apiKeyStatusText.textContent = `${state.customProvider === "groq" ? "Groq" : "Gemini"} Active`;
+      if (badge) {
+        badge.textContent = `BYOK: ${state.customProvider.toUpperCase()} (${state.customModel}) • FastMCP`;
+        badge.style.borderColor = "var(--accent-cyan)";
+      }
+      if (byokAlertBanner) byokAlertBanner.style.display = "none";
+    } else {
+      const hasError = status?.default_key_status === "error" || Boolean(status?.default_key_error);
+      if (hasError) {
+        if (apiKeyStatusDot) apiKeyStatusDot.textContent = "⚠️";
+        if (apiKeyStatusText) apiKeyStatusText.textContent = "Model Error — Add Key";
+        if (badge) {
+          badge.textContent = `Default Gemini (Error) • Local Fallback`;
+          badge.style.borderColor = "var(--status-unknown)";
+        }
+      } else {
+        if (apiKeyStatusDot) apiKeyStatusDot.textContent = "🔑";
+        if (apiKeyStatusText) apiKeyStatusText.textContent = "AI API Key";
+        if (badge && status?.configured_model) {
+          badge.textContent = `${status.configured_model} • FastMCP`;
+          badge.style.borderColor = "var(--hairline)";
+        }
+      }
+
+      // 2. Alert Banner Display Logic
+      const isDismissed = sessionStorage.getItem("icp_byok_banner_dismissed") === "true";
+      if (byokAlertBanner && !isDismissed) {
+        if (hasError) {
+          byokAlertBanner.style.display = "flex";
+          byokAlertBanner.classList.add("has-error");
+          if (byokBannerIcon) byokBannerIcon.textContent = "⚠️";
+          if (byokBannerTitle) byokBannerTitle.textContent = "Not getting the best experience with the current model?";
+          if (byokBannerText) byokBannerText.textContent = "The server's default AI model encountered an error or quota exhaustion. Add your own Google Gemini or Groq API key to unlock full AI reasoning, unblocked rate limits, and custom outreach personalization.";
+          if (byokErrorBox) byokErrorBox.style.display = "block";
+          if (byokErrorMessage) byokErrorMessage.textContent = status.default_key_error || "Model API key rejected or rate-limited.";
+        } else if (status?.default_key_status === "not_configured") {
+          byokAlertBanner.style.display = "flex";
+          byokAlertBanner.classList.remove("has-error");
+          if (byokBannerIcon) byokBannerIcon.textContent = "💡";
+          if (byokBannerTitle) byokBannerTitle.textContent = "Not getting the best experience with the default model?";
+          if (byokBannerText) byokBannerText.textContent = "No server API key is configured. Add your own Google Gemini or Groq API key to unlock full AI reasoning, unblocked rate limits, and custom outreach personalization.";
+          if (byokErrorBox) byokErrorBox.style.display = "none";
+        } else {
+          byokAlertBanner.style.display = "none";
+        }
+      }
+    }
+  }
+
   async function init() {
     setupTabNavigation();
     setupControls();
+    setupBYOK();
     await checkHealth();
+    await checkLLMStatus();
     await loadPresets();
     await loadUnblockedSources();
     await loadCampaigns();
@@ -285,12 +822,30 @@ document.addEventListener("DOMContentLoaded", () => {
       const presets = await res.json();
       presets.forEach(p => state.presets[p.id] = p);
 
-      if (state.presets["kriu_hiring"]) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryBrief = urlParams.get("brief");
+      const queryPreset = urlParams.get("preset");
+      const pendingBrief = sessionStorage.getItem("icp_pending_brief");
+
+      if (queryBrief && queryBrief.trim().length > 0) {
+        rawBriefInput.value = queryBrief.trim();
+        if (queryPreset && state.presets[queryPreset]?.target_customer_archetype) {
+          state.selectedArchetype = state.presets[queryPreset].target_customer_archetype;
+          customArchetypeInput.value = state.selectedArchetype;
+        }
+      } else if (queryPreset && state.presets[queryPreset]) {
+        applyPreset(queryPreset);
+      } else if (pendingBrief && pendingBrief.trim().length > 0) {
+        rawBriefInput.value = pendingBrief.trim();
+        sessionStorage.removeItem("icp_pending_brief");
+      } else if (state.presets["kriu_hiring"]) {
         applyPreset("kriu_hiring");
       }
 
       document.querySelectorAll(".preset-chip[data-preset]").forEach(chip => {
         chip.addEventListener("click", () => {
+          document.querySelectorAll(".preset-chip[data-preset]").forEach(c => c.classList.remove("active"));
+          chip.classList.add("active");
           applyPreset(chip.dataset.preset);
         });
       });
@@ -328,10 +883,16 @@ document.addEventListener("DOMContentLoaded", () => {
     btnDistillBrief.disabled = true;
 
     try {
+      const headers = getCustomHeaders();
+      const payload = {
+        raw_brief: text,
+        ...getCustomPayloadFields()
+      };
+
       const res = await fetch("/api/distill-brief", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ raw_brief: text })
+        headers: headers,
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
@@ -414,18 +975,22 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { setAgentStep(3, "completed"); setAgentStep(4, "active"); }, 3800);
 
     try {
+      const headers = getCustomHeaders();
+      const payload = {
+        brief_json: payloadBrief,
+        urls: [],
+        force_refresh: forceRefresh,
+        deterministic_mode: isDeterministic,
+        enable_live_grounding: true,
+        sliding_time_window_days: state.selectedTimeDays,
+        target_prospect_count: state.selectedTargetCount || 8,
+        ...getCustomPayloadFields()
+      };
+
       const res = await fetch("/api/compile-icp", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          brief_json: payloadBrief,
-          urls: [],
-          force_refresh: forceRefresh,
-          deterministic_mode: isDeterministic,
-          enable_live_grounding: true,
-          sliding_time_window_days: state.selectedTimeDays,
-          target_prospect_count: state.selectedTargetCount || 8
-        })
+        headers: headers,
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
@@ -468,7 +1033,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Telemetry
     const tele = state.report.telemetry || {};
-    document.getElementById("tele-model").textContent = tele.model_used || "FastMCP / Gemini";
+    const modelUsedEl = document.getElementById("tele-model");
+    if (tele.model_error) {
+      if (modelUsedEl) {
+        modelUsedEl.innerHTML = `<span style="color: #f87171;" title="${tele.model_error}">⚠️ Fallback (Model Error)</span> <a href="javascript:void(0)" id="link-fix-model-error" style="font-size: 0.75rem; text-decoration: underline; margin-left: 0.4rem; color: var(--accent-cyan);">Fix Key</a>`;
+        document.getElementById("link-fix-model-error")?.addEventListener("click", () => openApiKeyModal());
+      }
+      // Re-trigger banner if error occurred during generation
+      if (byokAlertBanner) {
+        byokAlertBanner.style.display = "flex";
+        byokAlertBanner.classList.add("has-error");
+        if (byokBannerIcon) byokBannerIcon.textContent = "⚠️";
+        if (byokBannerTitle) byokBannerTitle.textContent = "Not getting the best experience with the current model?";
+        if (byokBannerText) byokBannerText.textContent = "The model encountered an error during generation. Add your own Google Gemini or Groq API key to get reliable results without quotas or errors.";
+        if (byokErrorBox) byokErrorBox.style.display = "block";
+        if (byokErrorMessage) byokErrorMessage.textContent = tele.model_error;
+      }
+    } else {
+      if (modelUsedEl) {
+        let displayModel = tele.model_used || "FastMCP / Gemini";
+        if (tele.custom_provider) {
+          displayModel = `BYOK: ${tele.custom_provider.toUpperCase()} (${tele.custom_model || tele.model_used})`;
+        } else if (tele.provider) {
+          displayModel = `${tele.provider.toUpperCase()}: ${tele.model_used}`;
+        }
+        modelUsedEl.textContent = displayModel;
+      }
+    }
+
     document.getElementById("tele-tokens").textContent = tele.total_tokens || 0;
     document.getElementById("tele-leads-count").textContent = state.leads.length;
     document.getElementById("tele-time").textContent = `${tele.elapsed_seconds || 0.0}s`;

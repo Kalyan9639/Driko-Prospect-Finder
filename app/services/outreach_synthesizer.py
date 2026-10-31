@@ -79,30 +79,26 @@ async def generate_tailored_outreach(
     problem_symptom_matched: str,
     core_offering: str,
     evidence_excerpt: Optional[str] = None,
-    proof_excerpt: Optional[str] = None
+    proof_excerpt: Optional[str] = None,
+    custom_provider: Optional[str] = None,
+    custom_api_key: Optional[str] = None,
+    custom_model: Optional[str] = None
 ) -> OutreachDraft:
     """
-    Uses Gemini Flash Lite to craft authentic, peer-to-peer, non-templated outreach copy
+    Uses Gemini or Groq to craft authentic, peer-to-peer, non-templated outreach copy
     intelligently referencing the exact observed ground truth.
     Falls back gracefully to rule-based synthesis if API key is absent or offline.
     """
     if evidence_excerpt is None and proof_excerpt is not None:
         evidence_excerpt = proof_excerpt
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "your_gemini_api_key_here":
-        return _deterministic_outreach_fallback(
-            company_name, full_name, role_title, problem_symptom_matched, core_offering
-        )
-
-    from google import genai
-    from google.genai import types
 
     contact_name = full_name or "there"
     contact_role = role_title or "Department Lead"
     proof_context = evidence_excerpt or problem_symptom_matched
 
-    prompt = f"""You are an elite B2B sales strategist writing hyper-personalized, peer-to-peer, non-pitch outreach.
+    system_prompt = "You are an elite B2B sales strategist writing hyper-personalized, peer-to-peer, non-pitch outreach."
 
+    prompt = f"""
 Company Name: {company_name}
 Target Contact: {contact_name} ({contact_role})
 Observed Ground Truth Proof: "{proof_context}"
@@ -115,34 +111,34 @@ Generate 4 authentic assets:
 4. mom_test_opener: A non-salesy, past-experience discovery question focused on their current workflow bottleneck.
 
 Return ONLY a valid JSON object with keys:
-subject_line, cold_email_body, linkedin_dm_note, mom_test_opener"""
+subject_line, cold_email_body, linkedin_dm_note, mom_test_opener
+"""
 
-    model_name = "gemini-2.5-flash-lite"
-    try:
-        client = genai.Client(api_key=api_key)
-        loop = asyncio.get_running_loop()
-        resp = await loop.run_in_executor(
-            None,
-            lambda: client.models.generate_content(
-                model=model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.3,
-                    response_mime_type="application/json"
-                )
-            )
-        )
+    from app.services.llm_router import route_llm_json
 
-        if resp.text:
-            data = json.loads(resp.text)
+    data, error, telemetry = await route_llm_json(
+        prompt=prompt,
+        system_prompt=system_prompt,
+        schema_cls=OutreachDraft,
+        custom_provider=custom_provider,
+        custom_api_key=custom_api_key,
+        custom_model=custom_model,
+        temperature=0.3
+    )
+
+    if data:
+        try:
             return OutreachDraft(
                 subject_line=data.get("subject_line", f"Note regarding {company_name}'s workflow"),
                 cold_email_body=data.get("cold_email_body", ""),
                 linkedin_dm_note=data.get("linkedin_dm_note", "")[:280],
                 mom_test_opener=data.get("mom_test_opener", "")
             )
-    except Exception as e:
-        logger.debug(f"[Outreach] Model {model_name} error: {e}. Using deterministic synthesis.")
+        except Exception as pe:
+            logger.debug(f"[Outreach] Schema parsing failed: {pe}")
+
+    if error:
+        logger.debug(f"[Outreach] LLM execution notice: {error}. Using deterministic synthesis.")
 
     # Fallback to deterministic if models fail
     return _deterministic_outreach_fallback(
