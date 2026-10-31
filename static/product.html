@@ -180,14 +180,25 @@
 
     const BACKEND_APP_URL = "https://kriu-icp-lab-504509523991.us-central1.run.app/app";
 
+    function buildBackendUrl(brief) {
+      const params = new URLSearchParams();
+      if (brief) params.set("brief", brief);
+      // Automatically send the Emergent website URL so the backend back button knows where to return
+      params.set("return_to", window.location.href);
+      return `${BACKEND_APP_URL}?${params.toString()}`;
+    }
+
+    const topNavBtn = document.querySelector(".site-header a[href*='/app']");
+    if (topNavBtn) {
+      topNavBtn.href = buildBackendUrl();
+    }
+
     document.getElementById("hero-launch-btn").addEventListener("click", () => {
       const text = textarea.value.trim();
       if (text) {
         try { sessionStorage.setItem("icp_pending_brief", text); } catch (_) {}
-        window.location.href = `${BACKEND_APP_URL}?brief=${encodeURIComponent(text)}`;
-      } else {
-        window.location.href = BACKEND_APP_URL;
       }
+      window.location.href = buildBackendUrl(text);
     });
   </script>
 </body>
