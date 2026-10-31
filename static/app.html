@@ -7,11 +7,29 @@
   <meta name="description" content="Autonomous client discovery, decision-maker extraction, and outreach generation powered by 50+ unblocked public sources and MCP.">
   <link rel="stylesheet" href="css/styles.css">
   <script>
-    if (window.location.protocol === "file:") {
-      document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll('a[href="/portfolio"]').forEach(a => a.href = "index.html");
+    document.addEventListener("DOMContentLoaded", () => {
+      // Detect where the user came from (Emergent website, return_to param, or document.referrer)
+      const params = new URLSearchParams(window.location.search);
+      const returnTo = params.get("return_to") || (document.referrer && !document.referrer.includes(window.location.host) ? document.referrer : null);
+      if (returnTo) {
+        sessionStorage.setItem("icp_return_website", returnTo);
+      }
+
+      const websiteUrl = sessionStorage.getItem("icp_return_website");
+      const backButtons = document.querySelectorAll(".js-back-to-website, a[href='/portfolio'], a[href='/']");
+
+      backButtons.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          if (websiteUrl) {
+            e.preventDefault();
+            window.location.href = websiteUrl;
+          } else if (window.history.length > 1) {
+            e.preventDefault();
+            window.history.back();
+          }
+        });
       });
-    }
+    });
   </script>
 </head>
 <body>
@@ -31,7 +49,7 @@
           <span id="api-key-status-dot">🔑</span>
           <span id="api-key-status-text">AI API Key</span>
         </button>
-        <a href="/portfolio" class="btn btn-secondary btn-sm">&larr; Portfolio &amp; Case Study</a>
+        <a href="/portfolio" class="btn btn-secondary btn-sm js-back-to-website">&larr; Back to Website</a>
       </div>
     </div>
   </header>
