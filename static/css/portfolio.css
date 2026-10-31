@@ -1,41 +1,37 @@
 /* ==========================================================================
    MADDALA KALYAN SAI PRASAD — GOLDEN MINIMALIST PORTFOLIO & ICP CLARITY LAB
-   Design Philosophy: Production Landing Page Design (Golden Minimalist)
-   Three-Tier Surface Depth | Three-Tier Ink | Dual Accents | Hairline Grid
+   Clean, High-Readability Editorial Architecture | Minimal Contained Animation
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  /* 1. Three-Tier Surface Depth (Golden Minimalist Warm Obsidian) */
+  /* 1. Three-Tier Surface Depth (Solid, High-Contrast & Effortless to Read) */
   --bg-canvas: #080807;
   --bg-elevated: #0E0D0B;
-  --bg-panel: #15130F;
-  --bg-panel-hover: #1C1913;
-  --bg-glass: rgba(18, 16, 12, 0.76);
+  --bg-panel: #14120F;
+  --bg-panel-hover: #1A1712;
 
   /* 2. Three-Tier Ink Hierarchy */
   --ink-primary: #FAF7F0;
-  --ink-secondary: #B8B0A2;
-  --ink-muted: #7A7264;
+  --ink-secondary: #BDB5A6;
+  --ink-muted: #7E7667;
 
-  /* 3. Dual Purpose-Driven Accents */
-  /* Primary Conviction Accent: Brushed & Liquid Gold */
+  /* 3. Dual Purpose-Driven Accents (Golden Minimalist) */
   --gold-primary: #D4AF37;
   --gold-champagne: #F3E5AB;
   --gold-burnished: #9A7B1C;
   --gold-surface: rgba(212, 175, 55, 0.08);
   --gold-surface-strong: rgba(212, 175, 55, 0.15);
-  --gold-glow: rgba(212, 175, 55, 0.26);
 
-  /* Resolution / Proof Accent: Verified Signal Jade */
+  /* Resolution / Proof Accent */
   --proof-emerald: #34D399;
   --proof-surface: rgba(52, 211, 153, 0.1);
   --proof-border: rgba(52, 211, 153, 0.28);
 
   /* 4. Structural Hairline Tokens */
-  --hairline-gold: rgba(212, 175, 55, 0.18);
-  --hairline-gold-bright: rgba(243, 229, 171, 0.38);
+  --hairline-gold: rgba(212, 175, 55, 0.2);
+  --hairline-gold-bright: rgba(243, 229, 171, 0.45);
   --hairline-subtle: rgba(250, 247, 240, 0.08);
 
   /* 5. Three Typographic Voices */
@@ -43,17 +39,11 @@
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Layout & Transitions */
-  --max-width: 1240px;
+  --max-width: 1200px;
   --radius-xs: 4px;
   --radius-sm: 8px;
-  --radius-md: 12px;
   --transition-smooth: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-/* ==========================================================================
-   BASE RESET & ATMOSPHERIC CANVAS
-   ========================================================================== */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -67,15 +57,13 @@ html {
   color: var(--ink-primary);
   font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 body {
   background-color: var(--bg-canvas);
   color: var(--ink-primary);
-  position: relative;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -88,189 +76,21 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-  transition: color var(--transition-smooth), border-color var(--transition-smooth), background var(--transition-smooth);
+  transition: all var(--transition-smooth);
 }
 
 /* ==========================================================================
-   THREE.JS CANVAS & GOLDEN ATMOSPHERIC STRIKES / BACKGROUND LOGOS
-   ========================================================================== */
-
-#three-acoustic-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.88;
-}
-
-/* Atmospheric Golden Light Strikes & Peripheral Vignettes (85% Calm Rule) */
-.atmospheric-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-/* Diagonal Golden Light Strike 1 (Top Right Periphery) */
-.gold-strike-primary {
-  position: absolute;
-  top: -18%;
-  right: -12%;
-  width: 72vw;
-  height: 52vh;
-  background: linear-gradient(
-    118deg,
-    rgba(243, 229, 171, 0.11) 0%,
-    rgba(212, 175, 55, 0.06) 35%,
-    rgba(154, 123, 28, 0.015) 65%,
-    transparent 100%
-  );
-  transform: rotate(-22deg);
-  filter: blur(54px);
-}
-
-/* Diagonal Golden Light Strike 2 (Mid-Left Architectural Beam) */
-.gold-strike-secondary {
-  position: absolute;
-  top: 42%;
-  left: -20%;
-  width: 65vw;
-  height: 28vh;
-  background: linear-gradient(
-    62deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.07) 45%,
-    rgba(243, 229, 171, 0.09) 70%,
-    transparent 100%
-  );
-  transform: rotate(18deg);
-  filter: blur(60px);
-}
-
-/* Sharp Golden Laser Hairline Strike in Background */
-.gold-strike-beam {
-  position: absolute;
-  top: 14%;
-  right: -5%;
-  width: 58vw;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.22) 45%,
-    rgba(243, 229, 171, 0.45) 75%,
-    transparent 100%
-  );
-  transform: rotate(-24deg);
-  box-shadow: 0 0 24px rgba(212, 175, 55, 0.35);
-  opacity: 0.55;
-}
-
-.gold-strike-beam-lower {
-  position: absolute;
-  bottom: 22%;
-  left: -8%;
-  width: 52vw;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.28) 50%,
-    transparent 100%
-  );
-  transform: rotate(-24deg);
-  opacity: 0.4;
-}
-
-/* Radial Vignette ensuring 85% Central Negative Space Calmness */
-.calm-vignette-overlay {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 75% 65% at 50% 45%,
-    rgba(8, 8, 7, 0.58) 0%,
-    rgba(8, 8, 7, 0.84) 75%,
-    rgba(8, 8, 7, 0.96) 100%
-  );
-}
-
-/* Subtle Architectural Grid Overlay */
-.architectural-grid-lines {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  max-width: var(--max-width);
-  margin: 0 auto;
-  border-left: 1px solid rgba(212, 175, 55, 0.05);
-  border-right: 1px solid rgba(212, 175, 55, 0.05);
-}
-
-/* Section Background Watermark Logos & Sigils */
-.bg-watermark-sigil {
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.045;
-  color: var(--gold-primary);
-  user-select: none;
-}
-
-.sigil-hero-right {
-  top: 4rem;
-  right: -3rem;
-  width: 440px;
-  height: 440px;
-}
-
-.sigil-wispr-wave {
-  top: 50%;
-  left: -4rem;
-  transform: translateY(-50%);
-  width: 480px;
-  height: 320px;
-  opacity: 0.05;
-}
-
-.sigil-kriu-crest {
-  bottom: -2rem;
-  right: -2rem;
-  width: 380px;
-  height: 380px;
-  opacity: 0.045;
-}
-
-.sigil-osint-compass {
-  top: 2rem;
-  right: -4rem;
-  width: 460px;
-  height: 460px;
-  opacity: 0.05;
-}
-
-/* ==========================================================================
-   TYPOGRAPHY PRIMITIVES
+   TYPOGRAPHY & SECTION HEADERS
    ========================================================================== */
 
 .serif-voice {
   font-family: var(--font-serif);
   font-weight: 400;
-  letter-spacing: 0.01em;
 }
 
 .mono-voice {
   font-family: var(--font-mono);
   letter-spacing: 0.04em;
-}
-
-.gold-gradient-text {
-  background: linear-gradient(135deg, #FAF7F0 0%, #F3E5AB 45%, #D4AF37 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .section-index-bar {
@@ -282,11 +102,12 @@ a {
 
 .section-index-pill {
   font-family: var(--font-mono);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--gold-champagne);
-  padding: 0.28rem 0.7rem;
+  padding: 0.28rem 0.72rem;
   border: 1px solid var(--hairline-gold);
   background: var(--gold-surface);
   border-radius: var(--radius-xs);
@@ -299,7 +120,7 @@ a {
 }
 
 .two-layer-heading {
-  font-size: clamp(2rem, 3.6vw, 3.1rem);
+  font-size: clamp(2rem, 3.5vw, 3rem);
   font-weight: 700;
   line-height: 1.14;
   letter-spacing: -0.025em;
@@ -312,29 +133,29 @@ a {
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(2.15rem, 3.9vw, 3.35rem);
+  font-size: clamp(2.15rem, 3.8vw, 3.25rem);
   color: var(--gold-champagne);
-  margin-top: 0.2rem;
+  margin-top: 0.18rem;
 }
 
 /* ==========================================================================
-   STICKY ARCHITECTURAL HUD NAVIGATION
+   STICKY MINIMALIST HEADER
    ========================================================================== */
 
 .hud-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(8, 8, 7, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--hairline-gold);
+  background: rgba(8, 8, 7, 0.9);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--hairline-subtle);
 }
 
 .hud-container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0.85rem 1.5rem;
+  padding: 0.9rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -344,14 +165,14 @@ a {
 .hud-brand {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
 }
 
 .hud-monogram {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--gold-primary);
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(8, 8, 7, 0.9));
+  background: var(--bg-elevated);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,42 +181,28 @@ a {
   font-size: 1.15rem;
   color: var(--gold-champagne);
   border-radius: var(--radius-xs);
-  box-shadow: 0 0 16px rgba(212, 175, 55, 0.15);
-}
-
-.hud-brand-text {
-  display: flex;
-  flex-direction: column;
 }
 
 .hud-name {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.92rem;
-  letter-spacing: 0.02em;
   color: var(--ink-primary);
-}
-
-.hud-sub {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--gold-primary);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.01em;
 }
 
 .hud-nav {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .hud-link {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   color: var(--ink-secondary);
-  padding: 0.42rem 0.75rem;
+  padding: 0.4rem 0.75rem;
   border-radius: var(--radius-xs);
   border: 1px solid transparent;
-  transition: all var(--transition-smooth);
 }
 
 .hud-link:hover,
@@ -412,31 +219,29 @@ a {
 }
 
 /* ==========================================================================
-   BUTTONS & INTERACTIVE PILLS
+   BUTTONS
    ========================================================================== */
 
 .btn-gold {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
-  padding: 0.72rem 1.35rem;
+  gap: 0.5rem;
+  padding: 0.75rem 1.4rem;
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.875rem;
   color: #080807;
-  background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 60%, #B89024 100%);
+  background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 65%, #B89024 100%);
   border: 1px solid var(--gold-champagne);
   border-radius: var(--radius-xs);
   cursor: pointer;
-  box-shadow: 0 4px 22px rgba(212, 175, 55, 0.22);
   transition: all var(--transition-smooth);
 }
 
 .btn-gold:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 28px rgba(212, 175, 55, 0.38);
-  filter: brightness(1.06);
+  box-shadow: 0 6px 24px rgba(212, 175, 55, 0.28);
 }
 
 .btn-gold-sm {
@@ -448,13 +253,13 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
-  padding: 0.72rem 1.25rem;
+  gap: 0.5rem;
+  padding: 0.75rem 1.3rem;
   font-family: var(--font-sans);
   font-weight: 500;
   font-size: 0.875rem;
   color: var(--gold-champagne);
-  background: rgba(212, 175, 55, 0.06);
+  background: var(--bg-elevated);
   border: 1px solid var(--hairline-gold);
   border-radius: var(--radius-xs);
   cursor: pointer;
@@ -462,19 +267,13 @@ a {
 }
 
 .btn-outline-gold:hover {
-  background: rgba(212, 175, 55, 0.14);
+  background: var(--gold-surface);
   border-color: var(--gold-primary);
-  box-shadow: 0 0 18px rgba(212, 175, 55, 0.15);
 }
 
 /* ==========================================================================
-   MAIN CONTENT WRAPPER & SECTIONS
+   SECTION CONTAINERS & SMOOTH REVEAL
    ========================================================================== */
-
-main {
-  position: relative;
-  z-index: 2;
-}
 
 .section-stage {
   position: relative;
@@ -484,130 +283,175 @@ main {
   border-bottom: 1px solid var(--hairline-subtle);
 }
 
+.reveal-section {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ==========================================================================
-   SECTION 01: PORTFOLIO HERO STAGE (ASYMMETRIC EDITORIAL SPLIT)
+   SECTION 01: CENTERED MONUMENTAL EDITORIAL HERO (NO SIDE RECTANGLE PATCH)
+   With Minimal Golden Eclipse Horizon Arc at Top Periphery
    ========================================================================== */
 
-.hero-portfolio-stage {
-  padding-top: 4.25rem;
-  padding-bottom: 5rem;
+.hero-editorial-stage {
   position: relative;
+  padding-top: 5.5rem;
+  padding-bottom: 4.5rem;
+  text-align: center;
+  overflow: hidden;
 }
 
-.hero-asymmetric-grid {
-  display: grid;
-  grid-template-columns: 1.42fr 0.95fr;
-  gap: 3rem;
-  align-items: start;
+/* Minimal, Subtle Golden Horizon Arc at Top Periphery (Never touches text) */
+.hero-golden-horizon-arc {
+  position: absolute;
+  top: -340px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 980px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(212, 175, 55, 0.14) 0%,
+    rgba(212, 175, 55, 0.04) 45%,
+    transparent 72%
+  );
+  border-bottom: 1px solid rgba(243, 229, 171, 0.22);
+  pointer-events: none;
+  z-index: 0;
+  animation: subtleHorizonPulse 7s ease-in-out infinite alternate;
 }
 
-.challenge-status-banner {
+@keyframes subtleHorizonPulse {
+  0% { opacity: 0.65; transform: translateX(-50%) scale(0.98); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1.02); }
+}
+
+.hero-inner-focal {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.hero-kicker-tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.38rem 0.9rem;
-  background: rgba(212, 175, 55, 0.08);
+  gap: 0.6rem;
+  padding: 0.34rem 0.9rem;
+  background: var(--bg-elevated);
   border: 1px solid var(--hairline-gold);
   border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-champagne);
+  margin-bottom: 1.75rem;
+}
+
+.hero-kicker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold-primary);
+}
+
+.hero-monumental-title {
+  font-size: clamp(2.65rem, 5vw, 4.35rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--ink-primary);
   margin-bottom: 1.5rem;
 }
 
-.pulse-dot-gold {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--gold-primary);
-  box-shadow: 0 0 10px var(--gold-primary);
-  animation: pulseGold 2.2s infinite ease-in-out;
-}
-
-@keyframes pulseGold {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.65; }
-}
-
-.hero-display-title {
-  font-size: clamp(2.45rem, 4.4vw, 3.85rem);
-  font-weight: 700;
-  line-height: 1.09;
-  letter-spacing: -0.03em;
-  color: var(--ink-primary);
-  margin-bottom: 1.35rem;
-}
-
-.hero-display-title .serif-hero-line {
+.hero-monumental-title .serif-hero-sub {
   display: block;
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(2.55rem, 4.7vw, 4.1rem);
+  font-size: clamp(2.75rem, 5.2vw, 4.5rem);
   color: var(--gold-champagne);
-  margin-top: 0.28rem;
+  margin-top: 0.2rem;
   line-height: 1.08;
 }
 
-.hero-lead-prose {
-  font-size: 1.06rem;
+.hero-editorial-lead {
+  font-size: 1.08rem;
   color: var(--ink-secondary);
-  max-width: 650px;
-  line-height: 1.72;
-  margin-bottom: 1.85rem;
+  max-width: 700px;
+  margin: 0 auto 2.25rem;
+  line-height: 1.74;
 }
 
-.hero-lead-prose strong {
+.hero-editorial-lead strong {
   color: var(--ink-primary);
   font-weight: 600;
 }
 
-.hero-cta-row {
+.hero-center-actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 0.9rem;
-  margin-bottom: 2.25rem;
+  margin-bottom: 3.5rem;
 }
 
-/* Direct Identity & Contact Architectural Strip */
-.identity-links-rail {
+/* Full-Width 4-Pillar Architectural Identity Bar Along Bottom of Hero */
+.hero-identity-bar {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border: 1px solid var(--hairline-gold);
-  background: rgba(14, 13, 11, 0.82);
-  border-radius: var(--radius-xs);
-  overflow: hidden;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--hairline-gold);
+  border-bottom: 1px solid var(--hairline-gold);
+  background: var(--bg-elevated);
+  text-align: left;
 }
 
-.identity-rail-item {
+.hero-id-cell {
+  padding: 1.15rem 1.35rem;
+  border-right: 1px solid var(--hairline-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.8rem 1rem;
-  border-right: 1px solid var(--hairline-subtle);
-  border-bottom: 1px solid var(--hairline-subtle);
+  gap: 0.75rem;
   transition: background var(--transition-smooth);
 }
 
-.identity-rail-item:hover {
+.hero-id-cell:last-child {
+  border-right: none;
+}
+
+.hero-id-cell:hover {
   background: var(--gold-surface);
 }
 
-.rail-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+.id-cell-meta {
   min-width: 0;
 }
 
-.rail-kicker {
+.id-cell-label {
+  display: block;
   font-family: var(--font-mono);
   font-size: 0.66rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--ink-muted);
+  color: var(--gold-primary);
+  margin-bottom: 0.15rem;
 }
 
-.rail-value {
-  font-size: 0.84rem;
+.id-cell-val {
+  display: block;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--ink-primary);
   white-space: nowrap;
@@ -615,301 +459,257 @@ main {
   text-overflow: ellipsis;
 }
 
-.rail-arrow {
+.id-cell-arrow {
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  color: var(--gold-primary);
+  color: var(--gold-champagne);
   flex-shrink: 0;
-  margin-left: 0.5rem;
 }
 
-/* Right Column: Builder Dossier & Live Voice Acoustic Console */
-.builder-dossier-panel {
-  border: 1px solid var(--hairline-gold);
-  background: linear-gradient(165deg, rgba(21, 19, 15, 0.9) 0%, rgba(10, 9, 8, 0.94) 100%);
-  border-radius: var(--radius-sm);
-  padding: 1.5rem;
+/* ==========================================================================
+   SECTION 02: STAGGERED ZIG-ZAG TIMELINE SPINE (THE BUILDER'S STORY)
+   ========================================================================== */
+
+.zigzag-timeline-wrap {
   position: relative;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  margin-top: 2.75rem;
+  padding: 0.5rem 0;
 }
 
-.builder-dossier-panel::before {
-  content: "";
+.zigzag-central-spine {
   position: absolute;
   top: 0;
-  left: 1.5rem;
-  right: 1.5rem;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold-champagne), transparent);
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent 0%, var(--gold-primary) 15%, var(--gold-primary) 85%, transparent 100%);
 }
 
-.dossier-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 1rem;
-  margin-bottom: 1.15rem;
-  border-bottom: 1px solid var(--hairline-subtle);
-}
-
-.dossier-badge {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--proof-emerald);
-  background: var(--proof-surface);
-  border: 1px solid var(--proof-border);
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-xs);
-}
-
-.dossier-matrix {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  margin-bottom: 1.25rem;
-}
-
-.dossier-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  padding-bottom: 0.65rem;
-  border-bottom: 1px dashed rgba(250, 247, 240, 0.07);
-}
-
-.dossier-label {
-  font-family: var(--font-mono);
-  font-size: 0.73rem;
-  color: var(--ink-muted);
-  text-transform: uppercase;
-}
-
-.dossier-val {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--ink-primary);
-  text-align: right;
-}
-
-/* Interactive Voice Acoustic Visualizer Widget */
-.voice-visualizer-box {
-  background: rgba(8, 8, 7, 0.78);
-  border: 1px solid var(--hairline-gold);
-  border-radius: var(--radius-xs);
-  padding: 1rem;
-}
-
-.voice-box-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-}
-
-.voice-bars-preview {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  height: 28px;
-  margin-bottom: 0.75rem;
-}
-
-.voice-bar {
-  flex: 1;
-  background: linear-gradient(180deg, var(--gold-champagne), var(--gold-primary));
-  height: 22%;
-  border-radius: 2px;
-  transition: height 0.12s ease;
-}
-
-/* ==========================================================================
-   SECTION 02: THE INTERACTIVE WINDOW (CHANCES, MISTAKES & VOICE VELOCITY)
-   ========================================================================== */
-
-.narrative-spine-grid {
+.zigzag-node {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border: 1px solid var(--hairline-gold);
-  background: rgba(14, 13, 11, 0.78);
+  grid-template-columns: 1fr 72px 1fr;
+  align-items: center;
+  margin-bottom: 2.25rem;
+}
+
+.zigzag-node:last-child {
+  margin-bottom: 0;
+}
+
+.zigzag-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--hairline-subtle);
+  padding: 1.85rem;
   border-radius: var(--radius-xs);
-  margin-top: 2rem;
+  transition: border-color var(--transition-smooth);
 }
 
-.spine-column {
-  padding: 2rem 1.75rem;
-  border-right: 1px solid var(--hairline-subtle);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: background var(--transition-smooth);
+.zigzag-card:hover {
+  border-color: var(--gold-primary);
 }
 
-.spine-column:last-child {
-  border-right: none;
-}
-
-.spine-column:hover {
-  background: rgba(212, 175, 55, 0.04);
-}
-
-.spine-step-num {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--gold-primary);
-  margin-bottom: 0.9rem;
+.zigzag-center-orb {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  z-index: 2;
 }
 
-.spine-title {
-  font-size: 1.28rem;
-  font-weight: 700;
-  color: var(--ink-primary);
-  margin-bottom: 0.75rem;
-  line-height: 1.3;
+.orb-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-canvas);
+  border: 1px solid var(--gold-primary);
+  color: var(--gold-champagne);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.spine-prose {
-  font-size: 0.92rem;
-  color: var(--ink-secondary);
-  line-height: 1.68;
-  margin-bottom: 1.35rem;
+.zigzag-meta-side {
+  padding: 0 1.5rem;
 }
 
-.spine-takeaway {
-  padding-top: 1rem;
-  border-top: 1px solid var(--hairline-subtle);
+.zigzag-meta-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--gold-primary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.zigzag-meta-quote {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.1rem;
+  font-size: 1.45rem;
   color: var(--gold-champagne);
-}
-
-/* Voice Workflow Acceleration Bar */
-.voice-workflow-strip {
-  margin-top: 1.5rem;
-  border: 1px solid var(--hairline-gold);
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.09) 0%, rgba(14, 13, 11, 0.9) 50%, rgba(212, 175, 55, 0.06) 100%);
-  padding: 1.25rem 1.75rem;
-  border-radius: var(--radius-xs);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-}
-
-.workflow-steps-inline {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-}
-
-.wf-node {
-  padding: 0.35rem 0.7rem;
-  background: var(--bg-canvas);
-  border: 1px solid var(--hairline-gold);
-  color: var(--ink-primary);
-  border-radius: var(--radius-xs);
-}
-
-.wf-chevron {
-  color: var(--gold-primary);
-  font-weight: 600;
+  line-height: 1.28;
 }
 
 /* ==========================================================================
-   SECTION 03: SHIPPED SYSTEMS & PROOF OF WORK (4 ARCHITECTURAL STAGES)
+   SECTION 03: ASYMMETRIC BENTO & CONTAINED 3D ORBITAL ANIMATION STAGE
    ========================================================================== */
 
-.systems-ledger {
+.bento-systems-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
   margin-top: 2.25rem;
+}
+
+/* Project 01 Flagship Deck with Contained Minimal 3D Three.js Orbital Canvas */
+.flagship-spotlight-deck {
+  display: grid;
+  grid-template-columns: 1.35fr 0.95fr;
   border: 1px solid var(--hairline-gold);
+  background: var(--bg-panel);
   border-radius: var(--radius-xs);
-  background: rgba(14, 13, 11, 0.84);
+  overflow: hidden;
+  transition: border-color var(--transition-smooth);
+}
+
+.flagship-spotlight-deck:hover {
+  border-color: var(--gold-primary);
+}
+
+.deck-main-pad {
+  padding: 2.25rem;
+  border-right: 1px solid var(--hairline-subtle);
+}
+
+.deck-visual-pad {
+  padding: 1.85rem;
+  background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Contained Minimal Three.js 3D Orbital Canvas (Inside Section 03 Only!) */
+.contained-three-stage {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  border: 1px solid var(--hairline-subtle);
+  background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.09), #080807 75%);
+  border-radius: var(--radius-xs);
+  margin: 0.85rem 0 1.15rem;
   overflow: hidden;
 }
 
-.system-row {
+#section-three-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Project 02: Kriu Reverse-Split Deck */
+.kriu-split-deck {
   display: grid;
-  grid-template-columns: 240px 1.35fr 1fr;
-  border-bottom: 1px solid var(--hairline-subtle);
-  transition: background var(--transition-smooth);
+  grid-template-columns: 0.92fr 1.38fr;
+  border: 1px solid var(--hairline-subtle);
+  background: var(--bg-panel);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  transition: border-color var(--transition-smooth);
 }
 
-.system-row:last-child {
-  border-bottom: none;
+.kriu-split-deck:hover {
+  border-color: var(--gold-primary);
 }
 
-.system-row:hover {
-  background: rgba(212, 175, 55, 0.045);
-}
-
-.sys-col-index {
-  padding: 2rem 1.5rem;
+.kriu-audit-preview {
+  padding: 2rem;
   border-right: 1px solid var(--hairline-subtle);
+  background: var(--bg-elevated);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background: rgba(8, 8, 7, 0.45);
+  justify-content: center;
+  gap: 0.8rem;
 }
 
-.sys-number {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 2.8rem;
-  line-height: 1;
+.audit-diff-box {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.audit-claim {
+  background: rgba(255, 255, 255, 0.025);
+  border-left: 2px solid var(--ink-muted);
+  color: var(--ink-secondary);
+}
+
+.audit-verified {
+  background: rgba(52, 211, 153, 0.08);
+  border-left: 2px solid var(--proof-emerald);
+  color: #D1FAE5;
+}
+
+.audit-grill {
+  background: rgba(212, 175, 55, 0.09);
+  border-left: 2px solid var(--gold-primary);
   color: var(--gold-champagne);
 }
 
-.sys-category-tag {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--gold-primary);
-  margin-top: 0.5rem;
+/* Projects 03 & 04: Dual Cut-Corner Bento (LeadPulse-AI & DocuGraph-AI Last) */
+.dual-cut-bento {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 }
 
-.sys-status-pill {
+.cut-corner-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--hairline-subtle);
+  padding: 2.1rem;
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color var(--transition-smooth), background var(--transition-smooth);
+}
+
+.cut-corner-card:hover {
+  border-color: var(--gold-primary);
+  background: var(--bg-panel-hover);
+}
+
+.sys-number-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--proof-emerald);
-  margin-top: 1.5rem;
+  gap: 0.65rem;
+  margin-bottom: 0.8rem;
 }
 
-.sys-col-main {
-  padding: 2rem 2rem;
-  border-right: 1px solid var(--hairline-subtle);
-}
-
-.sys-title-wrap {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.65rem;
+.sys-num-circle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--gold-champagne);
 }
 
 .sys-title {
   font-size: 1.45rem;
   font-weight: 700;
   color: var(--ink-primary);
+  margin-bottom: 0.3rem;
 }
 
 .sys-subtitle {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.15rem;
+  font-size: 1.16rem;
   color: var(--gold-champagne);
   margin-bottom: 0.85rem;
 }
@@ -918,18 +718,19 @@ main {
   font-size: 0.92rem;
   color: var(--ink-secondary);
   line-height: 1.68;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.2rem;
 }
 
 .sys-tech-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+  margin-bottom: 1.3rem;
 }
 
 .tech-pill {
   font-family: var(--font-mono);
-  font-size: 0.71rem;
+  font-size: 0.7rem;
   color: var(--ink-secondary);
   background: var(--bg-canvas);
   border: 1px solid var(--hairline-subtle);
@@ -937,19 +738,12 @@ main {
   border-radius: var(--radius-xs);
 }
 
-.sys-col-proof {
-  padding: 2rem 1.75rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
 .sys-architecture-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
 }
 
 .sys-architecture-list li {
@@ -957,7 +751,6 @@ main {
   color: var(--ink-secondary);
   padding-left: 1.1rem;
   position: relative;
-  line-height: 1.5;
 }
 
 .sys-architecture-list li::before {
@@ -975,114 +768,48 @@ main {
 }
 
 /* ==========================================================================
-   SECTION 04: WISPR FLOW INDIA GROWTH PLAYBOOK
+   SECTION 04: 3-BLADE GROWTH STRATEGY DECK
    ========================================================================== */
 
-.growth-playbook-layout {
+.growth-blades-deck {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  border: 1px solid var(--hairline-gold);
-  background: rgba(14, 13, 11, 0.82);
-  border-radius: var(--radius-xs);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
   margin-top: 2rem;
 }
 
-.playbook-tabs-nav {
-  border-right: 1px solid var(--hairline-subtle);
+.growth-blade-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--hairline-subtle);
+  border-top: 2px solid var(--gold-primary);
+  border-radius: var(--radius-xs);
+  padding: 1.75rem;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  transition: border-color var(--transition-smooth), background var(--transition-smooth);
 }
 
-.playbook-tab-btn {
-  text-align: left;
-  padding: 1.45rem 1.4rem;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--hairline-subtle);
-  color: var(--ink-secondary);
-  cursor: pointer;
-  transition: all var(--transition-smooth);
+.growth-blade-card:hover {
+  border-color: var(--gold-champagne);
+  background: var(--bg-panel-hover);
 }
 
-.playbook-tab-btn:last-child {
-  border-bottom: none;
+.blade-meter-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 1rem 0;
 }
 
-.playbook-tab-btn:hover {
-  background: rgba(212, 175, 55, 0.04);
-  color: var(--ink-primary);
-}
-
-.playbook-tab-btn.active {
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.14), transparent);
-  border-left: 3px solid var(--gold-primary);
-  color: var(--ink-primary);
-}
-
-.ptab-index {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--gold-primary);
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.ptab-title {
-  font-size: 0.98rem;
-  font-weight: 600;
-  display: block;
-}
-
-.playbook-stage-content {
-  padding: 2.25rem;
-}
-
-.playbook-panel {
-  display: none;
-}
-
-.playbook-panel.active {
-  display: block;
-  animation: fadeSlideIn 0.3s ease;
-}
-
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.playbook-metrics-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--hairline-subtle);
-}
-
-.pm-box {
-  background: var(--bg-canvas);
-  border: 1px solid var(--hairline-subtle);
-  padding: 1rem;
-  border-radius: var(--radius-xs);
-}
-
-.pm-kicker {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--gold-primary);
-  text-transform: uppercase;
-  margin-bottom: 0.3rem;
-}
-
-.pm-text {
-  font-size: 0.85rem;
-  color: var(--ink-primary);
-  font-weight: 500;
+.blade-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-primary), var(--gold-champagne));
 }
 
 /* ==========================================================================
-   ACT I -> ACT II HORIZON SCROLL TRANSITION BRIDGE
+   ACT II: ICP CLARITY LAB PRODUCT SHOWCASE & BACKEND BRIDGE
    ========================================================================== */
 
 .act-transition-bridge {
@@ -1090,33 +817,16 @@ main {
   margin: 0 auto;
   padding: 3.5rem 1.5rem;
   text-align: center;
-  position: relative;
   border-bottom: 1px solid var(--hairline-gold);
-  background: radial-gradient(
-    ellipse 60% 80% at 50% 50%,
-    rgba(212, 175, 55, 0.11) 0%,
-    transparent 80%
-  );
+  background: radial-gradient(ellipse 55% 75% at 50% 50%, rgba(212, 175, 55, 0.08), transparent 80%);
 }
-
-.bridge-vertical-line {
-  width: 1px;
-  height: 54px;
-  background: linear-gradient(180deg, transparent, var(--gold-primary), var(--gold-champagne));
-  margin: 0 auto 1.25rem;
-}
-
-/* ==========================================================================
-   SECTION 05: ACT II — ICP CLARITY LAB PRODUCT STAGE & CONVERSION BRIDGE
-   ========================================================================== */
 
 .product-bridge-card {
-  margin-top: 2.25rem;
+  margin-top: 2rem;
   border: 1px solid var(--gold-primary);
-  background: linear-gradient(160deg, rgba(21, 19, 15, 0.94) 0%, rgba(9, 9, 8, 0.96) 100%);
-  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  border-radius: var(--radius-xs);
   padding: 2rem;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 40px rgba(212, 175, 55, 0.08);
 }
 
 .pb-top-bar {
@@ -1125,8 +835,8 @@ main {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  padding-bottom: 1.15rem;
-  margin-bottom: 1.25rem;
+  padding-bottom: 1.1rem;
+  margin-bottom: 1.2rem;
   border-bottom: 1px solid var(--hairline-subtle);
 }
 
@@ -1134,13 +844,13 @@ main {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1.15rem;
+  margin-bottom: 1.1rem;
 }
 
 .gold-preset-chip {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  padding: 0.45rem 0.85rem;
+  font-size: 0.74rem;
+  padding: 0.44rem 0.85rem;
   background: var(--bg-canvas);
   color: var(--ink-secondary);
   border: 1px solid var(--hairline-subtle);
@@ -1162,9 +872,9 @@ main {
 
 .gold-brief-textarea {
   width: 100%;
-  min-height: 118px;
+  min-height: 115px;
   padding: 1rem 1.15rem;
-  background: rgba(8, 8, 7, 0.9);
+  background: var(--bg-canvas);
   border: 1px solid var(--hairline-gold);
   border-radius: var(--radius-xs);
   color: var(--ink-primary);
@@ -1172,14 +882,12 @@ main {
   font-size: 0.95rem;
   line-height: 1.6;
   resize: vertical;
-  margin-bottom: 1.25rem;
-  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+  margin-bottom: 1.2rem;
 }
 
 .gold-brief-textarea:focus {
   outline: none;
   border-color: var(--gold-champagne);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.14);
 }
 
 .pb-bottom-bar {
@@ -1205,22 +913,19 @@ main {
   color: var(--gold-champagne);
   font-family: var(--font-mono);
   font-size: 0.74rem;
-  padding: 0.3rem 0.6rem;
+  padding: 0.32rem 0.6rem;
   border-radius: var(--radius-xs);
-  width: 230px;
+  width: 235px;
 }
 
-/* ==========================================================================
-   SECTION 06: COMPARATIVE SPLIT FRAME & DIRECTIONAL PIPELINE TRACK
-   ========================================================================== */
-
+/* Comparative Matrix & 6-Stage Pipeline */
 .comparative-split-frame {
-  margin-top: 2.25rem;
+  margin-top: 2rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   border: 1px solid var(--hairline-gold);
   border-radius: var(--radius-xs);
-  background: rgba(14, 13, 11, 0.84);
+  background: var(--bg-panel);
   overflow: hidden;
 }
 
@@ -1229,21 +934,18 @@ main {
 }
 
 .comp-side.negative-side {
-  border-right: 1px solid var(--hairline-gold);
-  background: rgba(8, 8, 7, 0.6);
-}
-
-.comp-side.positive-side {
-  background: linear-gradient(145deg, rgba(212, 175, 55, 0.06) 0%, rgba(14, 13, 11, 0.9) 100%);
+  border-right: 1px solid var(--hairline-subtle);
+  background: var(--bg-elevated);
 }
 
 .comp-header {
   font-family: var(--font-mono);
   font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  padding-bottom: 1rem;
-  margin-bottom: 1.25rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: 1.15rem;
   border-bottom: 1px solid var(--hairline-subtle);
 }
 
@@ -1254,7 +956,7 @@ main {
 }
 
 .comp-item {
-  padding-bottom: 1rem;
+  padding-bottom: 0.95rem;
   border-bottom: 1px dashed rgba(250, 247, 240, 0.07);
 }
 
@@ -1267,7 +969,7 @@ main {
   display: block;
   font-size: 0.95rem;
   color: var(--ink-primary);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.22rem;
 }
 
 .comp-item p {
@@ -1275,20 +977,18 @@ main {
   color: var(--ink-secondary);
 }
 
-/* 6-Stage Directional Pipeline Track */
 .pipeline-track-grid {
-  margin-top: 2rem;
+  margin-top: 1.75rem;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  border: 1px solid var(--hairline-gold);
-  background: rgba(14, 13, 11, 0.82);
+  border: 1px solid var(--hairline-subtle);
+  background: var(--bg-panel);
   border-radius: var(--radius-xs);
 }
 
 .pipeline-stage-cell {
-  padding: 1.35rem 1.1rem;
+  padding: 1.3rem 1.05rem;
   border-right: 1px solid var(--hairline-subtle);
-  position: relative;
 }
 
 .pipeline-stage-cell:last-child {
@@ -1299,14 +999,14 @@ main {
   font-family: var(--font-mono);
   font-size: 0.68rem;
   color: var(--gold-primary);
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.4rem;
 }
 
 .pstage-title {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--ink-primary);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
 .pstage-desc {
@@ -1315,27 +1015,23 @@ main {
   line-height: 1.5;
 }
 
-/* ==========================================================================
-   SECTION 07: WISPR FLOW B2B CASE STUDY DOSSIER
-   ========================================================================== */
-
 .case-study-dossier {
-  margin-top: 2rem;
+  margin-top: 1.75rem;
   border: 1px solid var(--hairline-gold);
-  background: linear-gradient(155deg, rgba(21, 19, 15, 0.9) 0%, rgba(8, 8, 7, 0.95) 100%);
+  background: var(--bg-panel);
   border-radius: var(--radius-xs);
-  padding: 2.25rem;
+  padding: 2.2rem;
 }
 
 .cs-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-top: 1.5rem;
+  gap: 1.2rem;
+  margin-top: 1.4rem;
 }
 
 .cs-card {
-  background: rgba(8, 8, 7, 0.75);
+  background: var(--bg-elevated);
   border: 1px solid var(--hairline-subtle);
   border-top: 2px solid var(--gold-primary);
   padding: 1.35rem;
@@ -1344,32 +1040,29 @@ main {
 
 .cs-card-kicker {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  text-transform: uppercase;
+  font-size: 0.69rem;
   color: var(--gold-champagne);
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.4rem;
 }
 
 .cs-card-title {
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--ink-primary);
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.5rem;
 }
 
 .cs-card-body {
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   color: var(--ink-secondary);
   line-height: 1.6;
 }
 
 /* ==========================================================================
-   SECTION 08: HIGH-TRUST GOLDEN MINIMALIST FOOTER
+   FOOTER
    ========================================================================== */
 
 .golden-footer {
-  position: relative;
-  z-index: 2;
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 4rem 1.5rem 3rem;
@@ -1379,8 +1072,8 @@ main {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
   gap: 2.5rem;
-  padding-bottom: 2.5rem;
-  border-bottom: 1px solid var(--hairline-gold);
+  padding-bottom: 2.25rem;
+  border-bottom: 1px solid var(--hairline-subtle);
 }
 
 .footer-contact-cards {
@@ -1390,30 +1083,29 @@ main {
 }
 
 .footer-contact-pill {
-  padding: 0.9rem 1rem;
-  background: var(--bg-elevated);
-  border: 1px solid var(--hairline-gold);
+  padding: 0.95rem 1.05rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--hairline-subtle);
   border-radius: var(--radius-xs);
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  transition: all var(--transition-smooth);
+  transition: border-color var(--transition-smooth);
 }
 
 .footer-contact-pill:hover {
-  background: var(--gold-surface);
   border-color: var(--gold-primary);
 }
 
 .footer-bottom-bar {
-  padding-top: 1.5rem;
+  padding-top: 1.4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   color: var(--ink-muted);
 }
 
@@ -1422,31 +1114,31 @@ main {
    ========================================================================== */
 
 @media (max-width: 1024px) {
-  .hero-asymmetric-grid,
-  .growth-playbook-layout,
+  .hero-identity-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .flagship-spotlight-deck,
+  .kriu-split-deck,
+  .dual-cut-bento,
+  .growth-blades-deck,
   .comparative-split-frame,
-  .footer-top-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .system-row {
-    grid-template-columns: 1fr;
-  }
-
-  .sys-col-index,
-  .sys-col-main {
-    border-right: none;
-    border-bottom: 1px solid var(--hairline-subtle);
-  }
-
-  .narrative-spine-grid,
+  .footer-top-grid,
   .cs-grid-3 {
     grid-template-columns: 1fr;
   }
 
-  .spine-column {
-    border-right: none;
-    border-bottom: 1px solid var(--hairline-subtle);
+  .zigzag-central-spine {
+    left: 19px;
+  }
+
+  .zigzag-node {
+    grid-template-columns: 38px 1fr;
+    gap: 1rem;
+  }
+
+  .zigzag-meta-side {
+    display: none;
   }
 
   .pipeline-track-grid {
@@ -1454,13 +1146,12 @@ main {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 680px) {
   .hud-nav {
     display: none;
   }
 
-  .identity-links-rail,
-  .playbook-metrics-row,
+  .hero-identity-bar,
   .pipeline-track-grid,
   .footer-contact-cards {
     grid-template-columns: 1fr;

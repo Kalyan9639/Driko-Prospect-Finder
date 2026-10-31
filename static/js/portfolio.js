@@ -1,12 +1,10 @@
 /**
  * MADDALA KALYAN SAI PRASAD — GOLDEN MINIMALIST PORTFOLIO & ICP CLARITY LAB
- * Pure Vanilla JS + CDN Three.js (Zero Node/React Build Dependency)
- *
- * Features:
- * 1. Three.js 3D Golden Acoustic Wave -> 52-Node OSINT Constellation Morphing
- * 2. Live Voice / Cursor Ripple Visualizer (Web Audio API + Simulated Voice Fallback)
- * 3. Decoupled Backend Connector (Opens app.html on Backend with Cross-Domain ?brief= Handoff)
- * 4. Interactive Wispr Flow India Growth Playbook & 1-Click Contact Copy
+ * Clean, High-Readability Architecture:
+ * - Zero noisy full-screen wave animations behind text
+ * - Minimal, attractive contained 3D Golden Orbital Sphere in Section 03 (#section-three-canvas)
+ * - Smooth IntersectionObserver section reveal
+ * - Direct Backend Launcher (opens app.html on Backend)
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -49,17 +47,21 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("icp_backend_url", queryBackend.replace(/\/+$/, ""));
   }
 
-  // Determine initial Backend URL for opening app.html
+  // Centralized Backend URL constant (update here when deployed to Cloud Run)
+  const DEFAULT_BACKEND_URL = "http://127.0.0.1:8000";
+
   function resolveDefaultBackendUrl() {
     const saved = localStorage.getItem("icp_backend_url");
     if (saved) return saved.replace(/\/+$/, "");
 
-    // If served directly from FastAPI on localhost or Cloud Run, use current origin
+    if (DEFAULT_BACKEND_URL && DEFAULT_BACKEND_URL !== "http://127.0.0.1:8000") {
+      return DEFAULT_BACKEND_URL.replace(/\/+$/, "");
+    }
+
     if (window.location.protocol.startsWith("http")) {
       return window.location.origin;
     }
-    // When opened via file:// or separate static host without config, default to local FastAPI port 8000
-    return "http://127.0.0.1:8000";
+    return DEFAULT_BACKEND_URL;
   }
 
   let backendBaseUrl = resolveDefaultBackendUrl();
@@ -91,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await res.json();
         if (backendStatusDot) {
           backendStatusDot.style.background = "#34D399";
-          backendStatusDot.style.boxShadow = "0 0 10px #34D399";
         }
         if (backendStatusText) {
           backendStatusText.textContent = `Backend Online (${data.unblocked_sources_count || 52} OSINT Feeds Ready)`;
@@ -100,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
     } catch (_) {
-      // Fallback check if hosted on a separate static server and local 8000 is running
       if (backendBaseUrl === window.location.origin && window.location.port !== "8000") {
         try {
           const r2 = await fetch("http://127.0.0.1:8000/api/health");
@@ -122,35 +122,24 @@ document.addEventListener("DOMContentLoaded", () => {
       backendStatusDot.style.background = "#D4AF37";
     }
     if (backendStatusText) {
-      backendStatusText.textContent = "Standalone Mode (Starts app.html on Launch)";
+      backendStatusText.textContent = "Ready to Launch Backend Workbench";
       backendStatusText.style.color = "#F3E5AB";
     }
   }
 
   pingBackendHealth();
 
-  // Build target app.html URL for launching the workbench
   function buildWorkbenchUrl(customBrief, presetKey) {
-    if (window.location.protocol === "file:") {
-      const params = new URLSearchParams();
-      if (customBrief) params.set("brief", customBrief);
-      if (presetKey) params.set("preset", presetKey);
-      const qs = params.toString();
-      return `app.html${qs ? "?" + qs : ""}`;
-    }
-
-    const base = (endpointInput?.value || backendBaseUrl || "http://127.0.0.1:8000")
+    const base = (endpointInput?.value || backendBaseUrl || DEFAULT_BACKEND_URL)
       .trim()
       .replace(/\/+$/, "");
     const params = new URLSearchParams();
     if (customBrief) params.set("brief", customBrief);
     if (presetKey) params.set("preset", presetKey);
     const qs = params.toString();
-    // Since backend root (/) directly opens app.html, we can target base + "/app" or base + "/"
-    return `${base}/app${qs ? "?" + qs : ""}`;
+    return `${base}/${qs ? "?" + qs : ""}`;
   }
 
-  // Wire all direct "Launch App" buttons
   document.querySelectorAll(".js-launch-workbench").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -167,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ===========================================================================
-  // 2. INTERACTIVE BRIEF BRIDGE & PRESET CHIPS (ACT II)
+  // 2. INTERACTIVE BRIEF PRESETS & 1-CLICK EMAIL COPY
   // ===========================================================================
 
   const briefTextarea = document.getElementById("hero-brief-input");
@@ -187,29 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ===========================================================================
-  // 3. WISPR FLOW INDIA GROWTH PLAYBOOK TABS
-  // ===========================================================================
-
-  const playbookBtns = document.querySelectorAll(".playbook-tab-btn");
-  const playbookPanels = document.querySelectorAll(".playbook-panel");
-
-  playbookBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.dataset.target;
-      playbookBtns.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      playbookPanels.forEach((p) => {
-        p.classList.toggle("active", p.id === targetId);
-      });
-    });
-  });
-
-  // ===========================================================================
-  // 4. 1-CLICK EMAIL COPY & NAVIGATION SPY
-  // ===========================================================================
-
   document.querySelectorAll(".js-copy-email").forEach((el) => {
     el.addEventListener("click", (e) => {
       e.preventDefault();
@@ -226,7 +192,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Smooth Section Spy for HUD Nav
+  // ===========================================================================
+  // 3. SMOOTH SECTION SCROLL-REVEAL & HUD SCROLL SPY
+  // ===========================================================================
+
+  const revealSections = document.querySelectorAll(".reveal-section");
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+    revealSections.forEach((sec) => observer.observe(sec));
+  } else {
+    revealSections.forEach((sec) => sec.classList.add("is-visible"));
+  }
+
   const sections = document.querySelectorAll("section[id]");
   const navLinks = document.querySelectorAll(".hud-link");
 
@@ -248,291 +234,114 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // ===========================================================================
-  // 5. LIVE VOICE / AUDIO RIPPLE VISUALIZER (HERO WIDGET + THREE.JS)
+  // 4. MINIMAL CONTAINED THREE.JS 3D GOLDEN ORBITAL SPHERE (IN SECTION 03 ONLY)
   // ===========================================================================
 
-  let voiceEnergy = 0.15;
-  let voiceModeActive = false;
-  let audioContext = null;
-  let analyser = null;
-  let micDataArray = null;
-  let simulatedPulseTimer = null;
-
-  const voiceBtn = document.getElementById("btn-toggle-voice-ripple");
-  const voiceStatusLabel = document.getElementById("voice-mode-status");
-  const voiceBars = document.querySelectorAll(".voice-bar");
-
-  function updateVoiceBarsUI(energy) {
-    if (!voiceBars.length) return;
-    const now = performance.now() * 0.006;
-    voiceBars.forEach((bar, idx) => {
-      const wave = Math.sin(now + idx * 0.55) * 0.5 + 0.5;
-      const base = voiceModeActive ? 28 + energy * 68 * wave : 16 + wave * 22;
-      bar.style.height = `${Math.min(100, Math.max(14, base))}%`;
-    });
-  }
-
-  async function toggleVoiceRipple() {
-    if (voiceModeActive) {
-      voiceModeActive = false;
-      voiceEnergy = 0.15;
-      if (simulatedPulseTimer) clearInterval(simulatedPulseTimer);
-      if (audioContext && audioContext.state !== "closed") {
-        try {
-          await audioContext.close();
-        } catch (_) {}
-      }
-      audioContext = null;
-      analyser = null;
-      if (voiceBtn) voiceBtn.textContent = "🎙️ Test Live Voice Wave";
-      if (voiceStatusLabel) voiceStatusLabel.textContent = "Acoustic Horizon: Idle";
-      return;
-    }
-
-    voiceModeActive = true;
-    if (voiceBtn) voiceBtn.textContent = "⏹ Stop Voice Ripple";
-
-    // Attempt client-side microphone frequency reading; fallback to simulated dictation cadence
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const source = audioContext.createMediaStreamSource(stream);
-      analyser = audioContext.createAnalyser();
-      analyser.fftSize = 64;
-      source.connect(analyser);
-      micDataArray = new Uint8Array(analyser.frequencyBinCount);
-      if (voiceStatusLabel) {
-        voiceStatusLabel.textContent = "Live Mic Active: Speak to Ripple 3D Field";
-        voiceStatusLabel.style.color = "#34D399";
-      }
-    } catch (_) {
-      // Simulated Wispr Flow voice dictation cadence when mic is unavailable/declined
-      if (voiceStatusLabel) {
-        voiceStatusLabel.textContent = "Simulated Voice Cadence Active (3D Ripple)";
-        voiceStatusLabel.style.color = "#F3E5AB";
-      }
-      simulatedPulseTimer = setInterval(() => {
-        const t = performance.now() * 0.004;
-        voiceEnergy = 0.45 + 0.45 * Math.abs(Math.sin(t) * Math.cos(t * 1.7));
-      }, 60);
-    }
-  }
-
-  if (voiceBtn) {
-    voiceBtn.addEventListener("click", toggleVoiceRipple);
-  }
-
-  // ===========================================================================
-  // 6. THREE.JS GOLDEN MINIMALIST 3D ACOUSTIC WAVE -> OSINT CONSTELLATION
-  // ===========================================================================
-
-  const canvas = document.getElementById("three-acoustic-canvas");
+  const canvas = document.getElementById("section-three-canvas");
   if (!canvas || typeof THREE === "undefined") {
     return;
   }
 
+  const container = canvas.parentElement;
+  const width = container.clientWidth || 380;
+  const height = container.clientHeight || 210;
+
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(
-    55,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  );
-  camera.position.set(0, 2.2, 26);
+  const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+  camera.position.set(0, 0, 11.5);
 
   const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     alpha: true,
-    antialias: true,
-    powerPreference: "high-performance"
+    antialias: true
   });
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(width, height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // Create 312 Golden Nodes (6 filaments x 52 OSINT sources)
-  const FILAMENTS = 6;
-  const NODES_PER_FILAMENT = 52;
-  const TOTAL_NODES = FILAMENTS * NODES_PER_FILAMENT;
+  const group = new THREE.Group();
+  scene.add(group);
 
-  const positions = new Float32Array(TOTAL_NODES * 3);
-  const colors = new Float32Array(TOTAL_NODES * 3);
-  const waveTargets = new Float32Array(TOTAL_NODES * 3);
-  const gridTargets = new Float32Array(TOTAL_NODES * 3);
-
-  const colorGoldPrimary = new THREE.Color(0xd4af37);
-  const colorGoldChampagne = new THREE.Color(0xf3e5ab);
-  const colorGoldBurnished = new THREE.Color(0x9a7b1c);
-
-  for (let f = 0; f < FILAMENTS; f++) {
-    for (let n = 0; n < NODES_PER_FILAMENT; n++) {
-      const idx = f * NODES_PER_FILAMENT + n;
-      const i3 = idx * 3;
-
-      // 1. Act I State: Organic Voice Frequency Ribbon along Horizon
-      const xWave = (n / (NODES_PER_FILAMENT - 1) - 0.5) * 46;
-      const zWave = (f - FILAMENTS / 2) * 2.6 - 4;
-      const yWave = Math.sin(n * 0.22 + f * 0.6) * 1.4 - 4.5;
-
-      waveTargets[i3] = xWave;
-      waveTargets[i3 + 1] = yWave;
-      waveTargets[i3 + 2] = zWave;
-
-      // 2. Act II State: Structured 52-Source OSINT Constellation Sphere/Matrix
-      const angle = (n / NODES_PER_FILAMENT) * Math.PI * 2;
-      const radius = 8.5 + f * 2.1;
-      const xGrid = Math.cos(angle + f * 0.25) * radius * 1.35;
-      const yGrid = Math.sin(angle + f * 0.25) * (radius * 0.62) - 1.0;
-      const zGrid = Math.sin(n * 0.4 + f) * 4.5 - 6;
-
-      gridTargets[i3] = xGrid;
-      gridTargets[i3 + 1] = yGrid;
-      gridTargets[i3 + 2] = zGrid;
-
-      positions[i3] = xWave;
-      positions[i3 + 1] = yWave;
-      positions[i3 + 2] = zWave;
-
-      // Mix golden hues
-      const c =
-        n % 5 === 0
-          ? colorGoldChampagne
-          : f % 2 === 0
-          ? colorGoldPrimary
-          : colorGoldBurnished;
-      colors[i3] = c.r;
-      colors[i3 + 1] = c.g;
-      colors[i3 + 2] = c.b;
-    }
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-
-  const pointsMaterial = new THREE.PointsMaterial({
-    size: 0.19,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.78,
-    blending: THREE.AdditiveBlending
-  });
-
-  const particleSystem = new THREE.Points(geometry, pointsMaterial);
-  scene.add(particleSystem);
-
-  // Subtle Golden Architectural Wireframe Ring in Far Background Periphery
-  const ringGeo = new THREE.RingGeometry(13.5, 13.62, 64);
-  const ringMat = new THREE.MeshBasicMaterial({
+  // Minimal Golden Wireframe Geodesic Sphere
+  const sphereGeo = new THREE.IcosahedronGeometry(3.3, 2);
+  const sphereMat = new THREE.MeshBasicMaterial({
     color: 0xd4af37,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.25
+  });
+  const wireframeSphere = new THREE.Mesh(sphereGeo, sphereMat);
+  group.add(wireframeSphere);
+
+  // 52 Golden Orbital Nodes (Representing the 52 Public OSINT Sources)
+  const nodeCount = 52;
+  const nodePositions = new Float32Array(nodeCount * 3);
+  for (let i = 0; i < nodeCount; i++) {
+    const phi = Math.acos(-1 + (2 * i) / nodeCount);
+    const theta = Math.sqrt(nodeCount * Math.PI) * phi;
+    const r = 3.35;
+    nodePositions[i * 3] = r * Math.cos(theta) * Math.sin(phi);
+    nodePositions[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+    nodePositions[i * 3 + 2] = r * Math.cos(phi);
+  }
+  const nodesGeo = new THREE.BufferGeometry();
+  nodesGeo.setAttribute("position", new THREE.BufferAttribute(nodePositions, 3));
+  const nodesMat = new THREE.PointsMaterial({
+    color: 0xf3e5ab,
+    size: 0.14,
+    transparent: true,
+    opacity: 0.9
+  });
+  const nodesPoints = new THREE.Points(nodesGeo, nodesMat);
+  group.add(nodesPoints);
+
+  // Outer Minimal Equatorial Golden Ring
+  const ringGeo = new THREE.RingGeometry(4.35, 4.42, 64);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xf3e5ab,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.11
+    opacity: 0.35
   });
-  const goldenRing = new THREE.Mesh(ringGeo, ringMat);
-  goldenRing.position.set(11, 3.5, -12);
-  goldenRing.rotation.x = 0.45;
-  goldenRing.rotation.y = -0.35;
-  scene.add(goldenRing);
+  const equatorialRing = new THREE.Mesh(ringGeo, ringMat);
+  equatorialRing.rotation.x = 1.15;
+  equatorialRing.rotation.y = 0.25;
+  group.add(equatorialRing);
 
-  const innerRingGeo = new THREE.RingGeometry(9.2, 9.28, 52);
-  const innerRing = new THREE.Mesh(innerRingGeo, ringMat);
-  innerRing.position.set(11, 3.5, -12);
-  innerRing.rotation.x = -0.35;
-  innerRing.rotation.y = 0.5;
-  scene.add(innerRing);
+  let targetRotX = 0;
+  let targetRotY = 0;
 
-  // Mouse & Scroll Tracking
-  let mouseX = 0;
-  let mouseY = 0;
-  let scrollProgress = 0;
+  container.addEventListener("mousemove", (e) => {
+    const rect = container.getBoundingClientRect();
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    targetRotY = nx * 0.6;
+    targetRotX = ny * 0.4;
+  });
 
-  window.addEventListener(
-    "mousemove",
-    (e) => {
-      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-      mouseY = -(e.clientY / window.innerHeight - 0.5) * 2;
-    },
-    { passive: true }
-  );
-
-  window.addEventListener(
-    "scroll",
-    () => {
-      const maxScroll = Math.max(1, document.body.scrollHeight - window.innerHeight);
-      scrollProgress = Math.min(1, Math.max(0, window.scrollY / maxScroll));
-    },
-    { passive: true }
-  );
+  container.addEventListener("mouseleave", () => {
+    targetRotX = 0;
+    targetRotY = 0;
+  });
 
   window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    const w = container.clientWidth || 380;
+    const h = container.clientHeight || 210;
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(w, h);
   });
 
-  // Animation Loop
-  const clock = new THREE.Clock();
+  function animateOrbital() {
+    requestAnimationFrame(animateOrbital);
+    wireframeSphere.rotation.y += 0.0035;
+    nodesPoints.rotation.y += 0.0035;
+    equatorialRing.rotation.z -= 0.004;
 
-  function animate() {
-    requestAnimationFrame(animate);
-    const elapsed = clock.getElapsedTime();
-
-    // Read live microphone amplitude if active
-    if (voiceModeActive && analyser && micDataArray) {
-      analyser.getByteFrequencyData(micDataArray);
-      let sum = 0;
-      for (let i = 0; i < micDataArray.length; i++) {
-        sum += micDataArray[i];
-      }
-      voiceEnergy = Math.min(1.4, (sum / micDataArray.length / 128) * 1.6 + 0.15);
-    }
-
-    updateVoiceBarsUI(voiceEnergy);
-
-    // Morph factor: 0.0 in Act I (Portfolio) -> 1.0 in Act II (ICP Clarity Lab Product)
-    const morphFactor = Math.min(1, Math.max(0, (scrollProgress - 0.32) * 2.2));
-    const posAttr = geometry.attributes.position;
-    const posArr = posAttr.array;
-
-    const amp = 1 + (voiceModeActive ? voiceEnergy * 2.2 : Math.abs(mouseX) * 0.45);
-
-    for (let f = 0; f < FILAMENTS; f++) {
-      for (let n = 0; n < NODES_PER_FILAMENT; n++) {
-        const idx = f * NODES_PER_FILAMENT + n;
-        const i3 = idx * 3;
-
-        // Dynamic acoustic wave motion
-        const dynamicWaveY =
-          waveTargets[i3 + 1] +
-          Math.sin(n * 0.24 + elapsed * 1.8 + f * 0.5) * 0.95 * amp +
-          Math.cos(n * 0.12 - elapsed * 1.1) * 0.45 * amp;
-
-        const targetX =
-          waveTargets[i3] * (1 - morphFactor) + gridTargets[i3] * morphFactor;
-        const targetY =
-          dynamicWaveY * (1 - morphFactor) +
-          (gridTargets[i3 + 1] + Math.sin(elapsed + n) * 0.25) * morphFactor;
-        const targetZ =
-          waveTargets[i3 + 2] * (1 - morphFactor) + gridTargets[i3 + 2] * morphFactor;
-
-        posArr[i3] += (targetX - posArr[i3]) * 0.08;
-        posArr[i3 + 1] += (targetY - posArr[i3 + 1]) * 0.08;
-        posArr[i3 + 2] += (targetZ - posArr[i3 + 2]) * 0.08;
-      }
-    }
-
-    posAttr.needsUpdate = true;
-
-    // Gentle camera & ring parallax
-    camera.position.x += (mouseX * 1.6 - camera.position.x) * 0.04;
-    camera.position.y += (2.2 + mouseY * 0.9 - camera.position.y) * 0.04;
-    camera.lookAt(0, -1.2, 0);
-
-    goldenRing.rotation.z = elapsed * 0.08 + scrollProgress * 1.2;
-    innerRing.rotation.z = -elapsed * 0.11 - scrollProgress * 1.5;
+    group.rotation.x += (targetRotX - group.rotation.x) * 0.06;
+    group.rotation.y += (targetRotY - group.rotation.y) * 0.06;
 
     renderer.render(scene, camera);
   }
 
-  animate();
+  animateOrbital();
 });

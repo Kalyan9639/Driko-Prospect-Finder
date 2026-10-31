@@ -95,8 +95,12 @@ async def read_app_workspace():
 
 
 @app.get("/portfolio", response_class=FileResponse)
+@app.get("/portfolio.html", response_class=FileResponse)
 @app.get("/landing", response_class=FileResponse)
 async def read_portfolio_landing():
+    portfolio_file = STATIC_DIR / "portfolio.html"
+    if portfolio_file.exists():
+        return FileResponse(portfolio_file)
     index_file = STATIC_DIR / "index.html"
     if not index_file.exists():
         raise HTTPException(status_code=404, detail="Portfolio landing page not found.")
