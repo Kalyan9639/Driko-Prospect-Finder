@@ -234,114 +234,387 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // ===========================================================================
-  // 4. MINIMAL CONTAINED THREE.JS 3D GOLDEN ORBITAL SPHERE (IN SECTION 03 ONLY)
+  // 4. THREE.JS 3D KINETIC NEURAL ASTROLABE (HERO) & GEODESIC TOPOLOGY (SEC 03)
   // ===========================================================================
 
-  const canvas = document.getElementById("section-three-canvas");
-  if (!canvas || typeof THREE === "undefined") {
-    return;
+  function setupThreeScenes() {
+    if (typeof THREE === "undefined") {
+      let retries = 0;
+      const checkTimer = setInterval(() => {
+        retries++;
+        if (typeof THREE !== "undefined") {
+          clearInterval(checkTimer);
+          initHeroThreeNexus();
+          initSectionThreeCanvas();
+        } else if (retries > 30) {
+          clearInterval(checkTimer);
+        }
+      }, 80);
+      return;
+    }
+    initHeroThreeNexus();
+    initSectionThreeCanvas();
   }
 
-  const container = canvas.parentElement;
-  const width = container.clientWidth || 380;
-  const height = container.clientHeight || 210;
+  // -------------------------------------------------------------------------
+  // Hero Centerpiece: 3D Kinetic Neural Astrolabe & Quantum Core
+  // -------------------------------------------------------------------------
+  function initHeroThreeNexus() {
+    const canvas = document.getElementById("hero-three-canvas");
+    if (!canvas) return;
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-  camera.position.set(0, 0, 11.5);
+    const container = canvas.parentElement;
+    let width = container.clientWidth || 640;
+    let height = container.clientHeight || 290;
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
-    alpha: true,
-    antialias: true
-  });
-  renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+    camera.position.set(0, 0, 11.2);
 
-  const group = new THREE.Group();
-  scene.add(group);
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: true
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // Minimal Golden Wireframe Geodesic Sphere
-  const sphereGeo = new THREE.IcosahedronGeometry(3.3, 2);
-  const sphereMat = new THREE.MeshBasicMaterial({
-    color: 0xd4af37,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.25
-  });
-  const wireframeSphere = new THREE.Mesh(sphereGeo, sphereMat);
-  group.add(wireframeSphere);
+    // Illumination
+    const ambLight = new THREE.AmbientLight(0xfff6e0, 1.4);
+    scene.add(ambLight);
 
-  // 52 Golden Orbital Nodes (Representing the 52 Public OSINT Sources)
-  const nodeCount = 52;
-  const nodePositions = new Float32Array(nodeCount * 3);
-  for (let i = 0; i < nodeCount; i++) {
-    const phi = Math.acos(-1 + (2 * i) / nodeCount);
-    const theta = Math.sqrt(nodeCount * Math.PI) * phi;
-    const r = 3.35;
-    nodePositions[i * 3] = r * Math.cos(theta) * Math.sin(phi);
-    nodePositions[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
-    nodePositions[i * 3 + 2] = r * Math.cos(phi);
+    const pLight1 = new THREE.PointLight(0xd4af37, 3.5, 40);
+    pLight1.position.set(12, 10, 14);
+    scene.add(pLight1);
+
+    const pLight2 = new THREE.PointLight(0xf3e5ab, 2.5, 40);
+    pLight2.position.set(-12, -8, 10);
+    scene.add(pLight2);
+
+    const masterGroup = new THREE.Group();
+    scene.add(masterGroup);
+
+    // 1. Central Glowing Crystal Core (Icosahedron + Wireframe)
+    const coreGeo = new THREE.IcosahedronGeometry(1.65, 1);
+    const coreMat = new THREE.MeshStandardMaterial({
+      color: 0xd4af37,
+      metalness: 0.85,
+      roughness: 0.18,
+      transparent: true,
+      opacity: 0.65
+    });
+    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+    masterGroup.add(coreMesh);
+
+    const wireMat = new THREE.MeshBasicMaterial({
+      color: 0xf3e5ab,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.95
+    });
+    const wireMesh = new THREE.Mesh(coreGeo, wireMat);
+    wireMesh.scale.set(1.015, 1.015, 1.015);
+    masterGroup.add(wireMesh);
+
+    // 2. Triple Astrolabe Gyroscopic Rings
+    // Ring 1 (Inner)
+    const ring1Geo = new THREE.TorusGeometry(2.45, 0.042, 16, 90);
+    const ringMat1 = new THREE.MeshStandardMaterial({
+      color: 0xd4af37,
+      metalness: 0.9,
+      roughness: 0.2
+    });
+    const ring1 = new THREE.Mesh(ring1Geo, ringMat1);
+    masterGroup.add(ring1);
+
+    // Ring 2 (Middle) with 8 orbital indicator beads
+    const ring2Geo = new THREE.TorusGeometry(3.25, 0.042, 16, 90);
+    const ringMat2 = new THREE.MeshStandardMaterial({
+      color: 0xf3e5ab,
+      metalness: 0.85,
+      roughness: 0.25
+    });
+    const ring2 = new THREE.Mesh(ring2Geo, ringMat2);
+    ring2.rotation.x = 1.15;
+    ring2.rotation.y = 0.45;
+    masterGroup.add(ring2);
+
+    // Orbital beads on Ring 2
+    const beadGeo = new THREE.SphereGeometry(0.1, 12, 12);
+    const beadMat = new THREE.MeshBasicMaterial({ color: 0xf3e5ab });
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const bead = new THREE.Mesh(beadGeo, beadMat);
+      bead.position.set(Math.cos(angle) * 3.25, Math.sin(angle) * 3.25, 0);
+      ring2.add(bead);
+    }
+
+    // Ring 3 (Outer Equatorial Astrolabe)
+    const ring3Geo = new THREE.TorusGeometry(4.1, 0.046, 16, 100);
+    const ringMat3 = new THREE.MeshStandardMaterial({
+      color: 0xd4af37,
+      metalness: 0.95,
+      roughness: 0.15
+    });
+    const ring3 = new THREE.Mesh(ring3Geo, ringMat3);
+    ring3.rotation.x = 0.55;
+    masterGroup.add(ring3);
+
+    // 3. 52 Golden OSINT Satellite Nodes
+    const nodeCount = 52;
+    const nodePositions = new Float32Array(nodeCount * 3);
+    for (let i = 0; i < nodeCount; i++) {
+      const phi = Math.acos(-1 + (2 * i) / nodeCount);
+      const theta = Math.sqrt(nodeCount * Math.PI) * phi;
+      const r = 3.65 + Math.sin(i * 1.5) * 0.45;
+      nodePositions[i * 3] = r * Math.cos(theta) * Math.sin(phi);
+      nodePositions[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+      nodePositions[i * 3 + 2] = r * Math.cos(phi);
+    }
+    const nodesGeo = new THREE.BufferGeometry();
+    nodesGeo.setAttribute("position", new THREE.BufferAttribute(nodePositions, 3));
+    const nodesMat = new THREE.PointsMaterial({
+      color: 0xf3e5ab,
+      size: 0.15,
+      transparent: true,
+      opacity: 0.95
+    });
+    const nodesPoints = new THREE.Points(nodesGeo, nodesMat);
+    masterGroup.add(nodesPoints);
+
+    // 4. Subtle Ambient Cosmic Dust
+    const dustCount = 80;
+    const dustPositions = new Float32Array(dustCount * 3);
+    for (let i = 0; i < dustCount * 3; i += 3) {
+      dustPositions[i] = (Math.random() - 0.5) * 12;
+      dustPositions[i + 1] = (Math.random() - 0.5) * 8;
+      dustPositions[i + 2] = (Math.random() - 0.5) * 8;
+    }
+    const dustGeo = new THREE.BufferGeometry();
+    dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
+    const dustMat = new THREE.PointsMaterial({
+      color: 0xd4af37,
+      size: 0.08,
+      transparent: true,
+      opacity: 0.45
+    });
+    const dustPoints = new THREE.Points(dustGeo, dustMat);
+    scene.add(dustPoints);
+
+    // Interactive Drag & Hover Orbit Controls
+    let isDragging = false;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
+    let targetRotX = 0.12;
+    let targetRotY = -0.25;
+    let curRotX = targetRotX;
+    let curRotY = targetRotY;
+
+    container.addEventListener("pointerdown", (e) => {
+      isDragging = true;
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
+    });
+
+    window.addEventListener("pointerup", () => {
+      isDragging = false;
+    });
+
+    container.addEventListener("pointermove", (e) => {
+      const rect = container.getBoundingClientRect();
+      const normX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const normY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+
+      if (isDragging) {
+        const deltaX = e.clientX - prevMouseX;
+        const deltaY = e.clientY - prevMouseY;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+        targetRotY += deltaX * 0.01;
+        targetRotX += deltaY * 0.01;
+      } else {
+        targetRotY = normX * 0.75;
+        targetRotX = normY * 0.5;
+      }
+    });
+
+    container.addEventListener("pointerleave", () => {
+      if (!isDragging) {
+        targetRotX = 0.08;
+        targetRotY = 0.05;
+      }
+    });
+
+    function resizeHero() {
+      if (!container || !renderer) return;
+      width = container.clientWidth || 640;
+      height = container.clientHeight || 290;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    window.addEventListener("resize", resizeHero);
+    if (window.ResizeObserver) {
+      new ResizeObserver(resizeHero).observe(container);
+    }
+
+    let clock = 0;
+    function animateHero() {
+      requestAnimationFrame(animateHero);
+      clock += 0.012;
+
+      // Internal kinetic counter-rotations
+      coreMesh.rotation.y += 0.006;
+      wireMesh.rotation.y += 0.006;
+      coreMesh.rotation.x += 0.003;
+      wireMesh.rotation.x += 0.003;
+
+      ring1.rotation.z += 0.012;
+      ring1.rotation.x += 0.006;
+
+      ring2.rotation.z -= 0.008;
+
+      ring3.rotation.y += 0.007;
+      ring3.rotation.z += 0.004;
+
+      nodesPoints.rotation.y += 0.0035;
+      dustPoints.rotation.y -= 0.001;
+
+      // Gentle breathing pulse on core
+      const pulseScale = 1 + Math.sin(clock * 2) * 0.04;
+      coreMesh.scale.set(pulseScale, pulseScale, pulseScale);
+      wireMesh.scale.set(pulseScale * 1.015, pulseScale * 1.015, pulseScale * 1.015);
+
+      // Smooth camera/group inertia
+      curRotX += (targetRotX - curRotX) * 0.08;
+      curRotY += (targetRotY - curRotY) * 0.08;
+
+      masterGroup.rotation.x = curRotX;
+      masterGroup.rotation.y = curRotY + Math.sin(clock * 0.6) * 0.15;
+
+      renderer.render(scene, camera);
+    }
+
+    animateHero();
   }
-  const nodesGeo = new THREE.BufferGeometry();
-  nodesGeo.setAttribute("position", new THREE.BufferAttribute(nodePositions, 3));
-  const nodesMat = new THREE.PointsMaterial({
-    color: 0xf3e5ab,
-    size: 0.14,
-    transparent: true,
-    opacity: 0.9
-  });
-  const nodesPoints = new THREE.Points(nodesGeo, nodesMat);
-  group.add(nodesPoints);
 
-  // Outer Minimal Equatorial Golden Ring
-  const ringGeo = new THREE.RingGeometry(4.35, 4.42, 64);
-  const ringMat = new THREE.MeshBasicMaterial({
-    color: 0xf3e5ab,
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.35
-  });
-  const equatorialRing = new THREE.Mesh(ringGeo, ringMat);
-  equatorialRing.rotation.x = 1.15;
-  equatorialRing.rotation.y = 0.25;
-  group.add(equatorialRing);
+  // -------------------------------------------------------------------------
+  // Section 03 Contained Stage: 3D Geodesic OSINT Network
+  // -------------------------------------------------------------------------
+  function initSectionThreeCanvas() {
+    const canvas = document.getElementById("section-three-canvas");
+    if (!canvas) return;
 
-  let targetRotX = 0;
-  let targetRotY = 0;
+    const container = canvas.parentElement;
+    let width = container.clientWidth || 380;
+    let height = container.clientHeight || 210;
 
-  container.addEventListener("mousemove", (e) => {
-    const rect = container.getBoundingClientRect();
-    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-    targetRotY = nx * 0.6;
-    targetRotX = ny * 0.4;
-  });
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    camera.position.set(0, 0, 11.5);
 
-  container.addEventListener("mouseleave", () => {
-    targetRotX = 0;
-    targetRotY = 0;
-  });
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: true
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  window.addEventListener("resize", () => {
-    const w = container.clientWidth || 380;
-    const h = container.clientHeight || 210;
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
-  });
+    const group = new THREE.Group();
+    scene.add(group);
 
-  function animateOrbital() {
-    requestAnimationFrame(animateOrbital);
-    wireframeSphere.rotation.y += 0.0035;
-    nodesPoints.rotation.y += 0.0035;
-    equatorialRing.rotation.z -= 0.004;
+    // Minimal Golden Wireframe Geodesic Sphere
+    const sphereGeo = new THREE.IcosahedronGeometry(3.3, 2);
+    const sphereMat = new THREE.MeshBasicMaterial({
+      color: 0xd4af37,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.35
+    });
+    const wireframeSphere = new THREE.Mesh(sphereGeo, sphereMat);
+    group.add(wireframeSphere);
 
-    group.rotation.x += (targetRotX - group.rotation.x) * 0.06;
-    group.rotation.y += (targetRotY - group.rotation.y) * 0.06;
+    // 52 Golden Orbital Nodes
+    const nodeCount = 52;
+    const nodePositions = new Float32Array(nodeCount * 3);
+    for (let i = 0; i < nodeCount; i++) {
+      const phi = Math.acos(-1 + (2 * i) / nodeCount);
+      const theta = Math.sqrt(nodeCount * Math.PI) * phi;
+      const r = 3.35;
+      nodePositions[i * 3] = r * Math.cos(theta) * Math.sin(phi);
+      nodePositions[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+      nodePositions[i * 3 + 2] = r * Math.cos(phi);
+    }
+    const nodesGeo = new THREE.BufferGeometry();
+    nodesGeo.setAttribute("position", new THREE.BufferAttribute(nodePositions, 3));
+    const nodesMat = new THREE.PointsMaterial({
+      color: 0xf3e5ab,
+      size: 0.18,
+      transparent: true,
+      opacity: 0.95
+    });
+    const nodesPoints = new THREE.Points(nodesGeo, nodesMat);
+    group.add(nodesPoints);
 
-    renderer.render(scene, camera);
+    // Outer Minimal Equatorial Golden Ring
+    const ringGeo = new THREE.RingGeometry(4.35, 4.45, 64);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0xf3e5ab,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.45
+    });
+    const equatorialRing = new THREE.Mesh(ringGeo, ringMat);
+    equatorialRing.rotation.x = 1.15;
+    equatorialRing.rotation.y = 0.25;
+    group.add(equatorialRing);
+
+    let targetRotX = 0;
+    let targetRotY = 0;
+
+    container.addEventListener("pointermove", (e) => {
+      const rect = container.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      targetRotY = nx * 0.65;
+      targetRotX = ny * 0.45;
+    });
+
+    container.addEventListener("pointerleave", () => {
+      targetRotX = 0;
+      targetRotY = 0;
+    });
+
+    function resizeSecThree() {
+      if (!container || !renderer) return;
+      width = container.clientWidth || 380;
+      height = container.clientHeight || 210;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    window.addEventListener("resize", resizeSecThree);
+    if (window.ResizeObserver) {
+      new ResizeObserver(resizeSecThree).observe(container);
+    }
+
+    function animateOrbital() {
+      requestAnimationFrame(animateOrbital);
+      wireframeSphere.rotation.y += 0.004;
+      nodesPoints.rotation.y += 0.004;
+      equatorialRing.rotation.z -= 0.0045;
+
+      group.rotation.x += (targetRotX - group.rotation.x) * 0.06;
+      group.rotation.y += (targetRotY - group.rotation.y) * 0.06;
+
+      renderer.render(scene, camera);
+    }
+
+    animateOrbital();
   }
 
-  animateOrbital();
+  setupThreeScenes();
 });

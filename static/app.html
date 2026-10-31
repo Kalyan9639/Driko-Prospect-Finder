@@ -657,7 +657,7 @@
               <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">⚡ Groq Cloud</span>
               <span class="badge-pill-cyan">Ultra Fast</span>
             </div>
-            <div style="font-size: 0.775rem; color: var(--ink-secondary);">Llama 3.3 70B & 3.1 8B. Blazing sub-second inference. Free tier available.</div>
+            <div style="font-size: 0.775rem; color: var(--ink-secondary);">OpenAI GPT-OSS 20B (openai/gpt-oss-20b). Blazing sub-second inference. Free tier available.</div>
           </button>
           <button type="button" class="provider-card" data-provider="gemini" id="provider-card-gemini">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
@@ -669,8 +669,8 @@
         </div>
       </div>
 
-      <!-- Model Selection Dropdown -->
-      <div style="margin-bottom: 1.25rem;">
+      <!-- Model Selection Dropdown (Only shown when provider supports multiple models; hidden for Groq which automatically defaults to openai/gpt-oss-20b) -->
+      <div id="custom-model-group" style="margin-bottom: 1.25rem; display: none;">
         <label for="custom-model-select" style="display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.4rem;">
           Model Selection:
         </label>

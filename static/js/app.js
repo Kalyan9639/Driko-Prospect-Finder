@@ -25,14 +25,13 @@ document.addEventListener("DOMContentLoaded", () => {
     currentCampaignId: null,
     customProvider: localStorage.getItem("icp_custom_provider") || "groq",
     customApiKey: localStorage.getItem("icp_custom_api_key") || "",
-    customModel: localStorage.getItem("icp_custom_model") || "llama-3.3-70b-versatile",
+    customModel: localStorage.getItem("icp_custom_model") || "openai/gpt-oss-20b",
     serverLLMStatus: null
   };
 
   const PROVIDER_MODELS = {
     groq: [
-      { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B Versatile (Recommended • Fastest)" },
-      { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B Instant (Ultra-low latency)" }
+      { id: "openai/gpt-oss-20b", name: "OpenAI GPT-OSS 20B (openai/gpt-oss-20b)" }
     ],
     gemini: [
       { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite (Recommended • Free Tier)" },
@@ -295,6 +294,16 @@ document.addEventListener("DOMContentLoaded", () => {
       providerCardGemini.classList.toggle("active", provider === "gemini");
     }
 
+    // Toggle model selection visibility:
+    // Groq automatically uses openai/gpt-oss-20b by default with no model selection needed.
+    const customModelGroup = document.getElementById("custom-model-group");
+    if (provider === "groq") {
+      state.customModel = "openai/gpt-oss-20b";
+      if (customModelGroup) customModelGroup.style.display = "none";
+    } else {
+      if (customModelGroup) customModelGroup.style.display = "block";
+    }
+
     // Populate model options
     if (customModelSelect) {
       customModelSelect.innerHTML = "";
@@ -442,7 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({
           provider: state.customProvider,
           api_key: key,
-          model: customModelSelect?.value || state.customModel
+          model: state.customProvider === "groq" ? "openai/gpt-oss-20b" : (customModelSelect?.value || state.customModel)
         })
       });
 
@@ -482,7 +491,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     state.customApiKey = key;
-    state.customModel = customModelSelect?.value || state.customModel;
+    if (state.customProvider === "groq") {
+      state.customModel = "openai/gpt-oss-20b";
+    } else {
+      state.customModel = customModelSelect?.value || state.customModel;
+    }
 
     localStorage.setItem("icp_custom_provider", state.customProvider);
     localStorage.setItem("icp_custom_api_key", state.customApiKey);

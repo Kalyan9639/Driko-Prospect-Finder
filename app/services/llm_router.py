@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 import asyncio
@@ -18,21 +19,57 @@ _last_runtime_error: Optional[Dict[str, Any]] = None
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODELS_URL = "https://api.groq.com/openai/v1/models"
-GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile"
+GROQ_DEFAULT_MODEL = "openai/gpt-oss-20b"
 GEMINI_DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
 
-def set_last_runtime_error(provider: str, model: str, error: str, error_type: str = "runtime_error"):
+def simplify_error_message(err: Any) -> str:
+    """
+    Condenses raw LLM exceptions, HTTP responses, and error blobs into short, clear messages:
+    e.g. 'Request quota exhausted', 'Model is busy', 'Invalid API key', 'Network connection error'.
+    """
+    if not err:
+        return "Unknown error"
+
+    err_str = str(err)
+    err_lower = err_str.lower()
+
+    if any(q in err_lower for q in ["429", "resource_exhausted", "quota", "rate limit", "rate_limit", "exhausted"]):
+        return "Request quota exhausted"
+    elif any(b in err_lower for b in ["503", "unavailable", "high demand", "busy", "overloaded", "capacity"]):
+        return "Model is busy"
+    elif any(k in err_lower for k in ["400", "api_key_invalid", "401", "invalid api key", "invalid_api_key", "unauthorized"]):
+        return "Invalid API key"
+    elif any(p in err_lower for p in ["403", "permission_denied", "forbidden", "access denied"]):
+        return "Access denied"
+    elif any(n in err_lower for n in ["404", "not_found", "model not found"]):
+        return "Model not found"
+    elif any(c in err_lower for c in ["connecterror", "getaddrinfo", "timeout", "timed out", "connection"]):
+        return "Network connection error"
+    elif "safety" in err_lower or "blocked" in err_lower:
+        return "Blocked by safety filters"
+    else:
+        # Short fallback: extract clean first line, max 50 chars
+        first_line = err_str.strip().split("\n")[0].strip()
+        first_line = re.sub(r"^(?:[a-zA-Z_]+(?:Error|Exception):\s*)", "", first_line).strip()
+        if len(first_line) > 50:
+            first_line = first_line[:47] + "..."
+        return first_line or "Model error"
+
+
+def set_last_runtime_error(provider: str, model: str, error: Any, error_type: str = "runtime_error"):
     global _last_runtime_error
+    short_msg = simplify_error_message(error)
     _last_runtime_error = {
         "provider": provider,
         "model": model,
-        "error": error,
+        "error": short_msg,
+        "raw_error": str(error)[:500],
         "error_type": error_type,
         "timestamp": time.time(),
         "timestamp_iso": time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
     }
-    logger.warning(f"[LLMRouter] Captured runtime error ({provider}/{model}): {error}")
+    logger.warning(f"[LLMRouter] Captured runtime error ({provider}/{model}): {short_msg}")
 
 
 def get_last_runtime_error() -> Optional[Dict[str, Any]]:
@@ -48,29 +85,18 @@ def get_llm_status() -> Dict[str, Any]:
     """
     Returns diagnostic health of the server's default AI configuration,
     including any active errors thrown by the default API key.
+    Takes GEMINI_API_KEY from environment variables if present.
     """
     default_key = os.getenv("GEMINI_API_KEY", "").strip()
     has_env_key = bool(default_key and default_key != "your_gemini_api_key_here")
 
-    # Check key format
-    format_warning = None
-    if has_env_key and not default_key.startswith("AIza"):
-        format_warning = (
-            f"The configured key starts with '{default_key[:6]}...', which does not match "
-            "the standard Google AI Studio key format ('AIzaSy...'). This typically causes "
-            "Google AI Studio to reject requests with 400 API_KEY_INVALID."
-        )
-
     last_err = get_last_runtime_error()
     if last_err:
         status = "error"
-        error_msg = last_err.get("error", "Unknown model error")
+        error_msg = last_err.get("error", "Model error")
     elif not has_env_key:
         status = "not_configured"
-        error_msg = "GEMINI_API_KEY is not configured in server environment."
-    elif format_warning:
-        status = "error"
-        error_msg = format_warning
+        error_msg = "GEMINI_API_KEY not configured in environment"
     else:
         status = "ok"
         error_msg = None
@@ -81,7 +107,7 @@ def get_llm_status() -> Dict[str, Any]:
         "has_env_key": has_env_key,
         "default_key_status": status,
         "default_key_error": error_msg,
-        "default_key_hint": format_warning,
+        "default_key_hint": None,
         "last_error_details": last_err,
         "supported_custom_providers": ["gemini", "groq"],
         "recommendation": (
@@ -108,8 +134,8 @@ async def validate_api_key(
             "valid": False,
             "provider": provider,
             "model": model or "unknown",
-            "message": "API key cannot be empty.",
-            "error": "Empty API key provided."
+            "message": "API key cannot be empty",
+            "error": "API key cannot be empty"
         }
 
     # Validate Groq Key
@@ -120,56 +146,40 @@ async def validate_api_key(
             "Content-Type": "application/json"
         }
         try:
-            async with httpx.AsyncClient(timeout=8.0) as client:
+            async with httpx.AsyncClient(timeout=5.0) as client:
                 r = await client.get(GROQ_MODELS_URL, headers=headers)
                 if r.status_code == 200:
                     return {
                         "valid": True,
                         "provider": "groq",
                         "model": test_model,
-                        "message": f"Groq API key verified successfully! Connected with model {test_model}."
+                        "message": f"Groq API key verified ({test_model})"
                     }
                 elif r.status_code == 401:
-                    err_json = r.json() if "application/json" in r.headers.get("content-type", "") else {}
-                    err_detail = err_json.get("error", {}).get("message", "Invalid API key")
                     return {
                         "valid": False,
                         "provider": "groq",
                         "model": test_model,
-                        "message": f"Groq rejected the API key: {err_detail}",
-                        "error": f"HTTP 401 Unauthorized: {err_detail}"
+                        "message": "Invalid API key",
+                        "error": "Invalid API key"
                     }
                 else:
+                    short_err = simplify_error_message(r.text)
                     return {
                         "valid": False,
                         "provider": "groq",
                         "model": test_model,
-                        "message": f"Groq returned HTTP {r.status_code}",
-                        "error": r.text[:200]
+                        "message": short_err,
+                        "error": short_err
                     }
-        except httpx.ConnectError as ce:
-            # In sandboxed / restricted networks, inform clearly
-            if clean_key.startswith("gsk_"):
-                return {
-                    "valid": True,
-                    "provider": "groq",
-                    "model": test_model,
-                    "message": "Groq key format is valid ('gsk_...'). Note: Outbound network may be isolated in current sandbox."
-                }
-            return {
-                "valid": False,
-                "provider": "groq",
-                "model": test_model,
-                "message": f"Network connection failed: {ce}",
-                "error": str(ce)
-            }
         except Exception as e:
+            short_err = simplify_error_message(e)
             return {
                 "valid": False,
                 "provider": "groq",
                 "model": test_model,
-                "message": f"Error validating Groq key: {str(e)}",
-                "error": str(e)
+                "message": short_err,
+                "error": short_err
             }
 
     # Validate Gemini Key
@@ -180,72 +190,41 @@ async def validate_api_key(
             from google.genai import types
 
             client = genai.Client(api_key=clean_key)
-            # Lightweight verification: request 1 token
             loop = asyncio.get_running_loop()
-            resp = await loop.run_in_executor(
-                None,
-                lambda: client.models.generate_content(
-                    model=test_model,
-                    contents="ping",
-                    config=types.GenerateContentConfig(max_output_tokens=5, temperature=0.0)
-                )
+            await asyncio.wait_for(
+                loop.run_in_executor(
+                    None,
+                    lambda: client.models.generate_content(
+                        model=test_model,
+                        contents="ping",
+                        config=types.GenerateContentConfig(max_output_tokens=5, temperature=0.0)
+                    )
+                ),
+                timeout=5.0
             )
             return {
                 "valid": True,
                 "provider": "gemini",
                 "model": test_model,
-                "message": f"Google Gemini API key verified successfully! Connected with model {test_model}."
+                "message": f"Gemini API key verified ({test_model})"
             }
         except Exception as e:
-            err_str = str(e)
-            if "400" in err_str or "API_KEY_INVALID" in err_str:
-                return {
-                    "valid": False,
-                    "provider": "gemini",
-                    "model": test_model,
-                    "message": "Google rejected the API key (400 API_KEY_INVALID). Check Google AI Studio.",
-                    "error": err_str[:300]
-                }
-            elif "403" in err_str or "PERMISSION_DENIED" in err_str:
-                return {
-                    "valid": False,
-                    "provider": "gemini",
-                    "model": test_model,
-                    "message": "Google permission denied (403). Ensure Gemini API is enabled in your Google Cloud / AI Studio project.",
-                    "error": err_str[:300]
-                }
-            elif "ConnectError" in err_str or "getaddrinfo" in err_str:
-                # Network check in isolated environment
-                if clean_key.startswith("AIza"):
-                    return {
-                        "valid": True,
-                        "provider": "gemini",
-                        "model": test_model,
-                        "message": "Gemini key format is valid ('AIzaSy...'). Note: Outbound network may be isolated in current sandbox."
-                    }
-                return {
-                    "valid": False,
-                    "provider": "gemini",
-                    "model": test_model,
-                    "message": "Network connection error while reaching Google AI APIs.",
-                    "error": err_str[:200]
-                }
-            else:
-                return {
-                    "valid": False,
-                    "provider": "gemini",
-                    "model": test_model,
-                    "message": f"Gemini error: {err_str[:150]}",
-                    "error": err_str[:300]
-                }
+            short_err = simplify_error_message(e)
+            return {
+                "valid": False,
+                "provider": "gemini",
+                "model": test_model,
+                "message": short_err,
+                "error": short_err
+            }
 
     else:
         return {
             "valid": False,
             "provider": provider,
             "model": model or "unknown",
-            "message": f"Unsupported provider '{provider}'. Must be 'gemini' or 'groq'.",
-            "error": "Unsupported provider"
+            "message": f"Unsupported provider: {provider}",
+            "error": f"Unsupported provider: {provider}"
         }
 
 
@@ -294,7 +273,6 @@ async def call_groq_json(
                 telemetry["total_tokens"] = usage.get("total_tokens", 0)
 
                 content = data["choices"][0]["message"]["content"]
-                # Parse JSON
                 parsed = json.loads(content)
                 return parsed, None, telemetry
             else:
@@ -303,14 +281,14 @@ async def call_groq_json(
                     err_json = resp.json()
                     err_msg = err_json.get("error", {}).get("message", err_text)
                 except Exception:
-                    err_msg = err_text[:200]
-                full_err = f"Groq API Error ({resp.status_code}): {err_msg}"
-                set_last_runtime_error("groq", selected_model, full_err, f"HTTP_{resp.status_code}")
-                return None, full_err, telemetry
+                    err_msg = err_text
+                short_err = simplify_error_message(err_msg)
+                set_last_runtime_error("groq", selected_model, short_err, f"HTTP_{resp.status_code}")
+                return None, short_err, telemetry
     except Exception as e:
-        err_str = f"Groq Request Exception: {str(e)}"
-        set_last_runtime_error("groq", selected_model, err_str, type(e).__name__)
-        return None, err_str, telemetry
+        short_err = simplify_error_message(e)
+        set_last_runtime_error("groq", selected_model, short_err, type(e).__name__)
+        return None, short_err, telemetry
 
 
 async def call_gemini_json(
@@ -368,14 +346,14 @@ async def call_gemini_json(
             parsed = json.loads(response.text)
             return parsed, None, telemetry
         else:
-            err = "Gemini returned empty text candidate response."
+            err = "Empty response received"
             set_last_runtime_error("gemini", selected_model, err, "EMPTY_RESPONSE")
             return None, err, telemetry
 
     except Exception as e:
-        err_str = str(e)
-        set_last_runtime_error("gemini", selected_model, err_str, type(e).__name__)
-        return None, err_str, telemetry
+        short_err = simplify_error_message(e)
+        set_last_runtime_error("gemini", selected_model, short_err, type(e).__name__)
+        return None, short_err, telemetry
 
 
 async def route_llm_json(
@@ -390,8 +368,8 @@ async def route_llm_json(
     """
     Master router for LLM calls:
     1. If custom_api_key is provided with custom_provider ('groq' or 'gemini'), calls it directly.
-    2. Otherwise, uses server default GEMINI_API_KEY.
-    3. If default key throws an error, captures the error and returns it alongside fallback signals.
+    2. Otherwise, uses server default GEMINI_API_KEY from environment variables.
+    3. If default key throws an error, captures the error shortly and returns it alongside fallback signals.
     """
     # 1. Custom Provider Requested
     if custom_api_key and custom_api_key.strip():
@@ -414,10 +392,10 @@ async def route_llm_json(
                 temperature=temperature
             )
 
-    # 2. Server Default Key (Gemini)
+    # 2. Server Default Key (Gemini from environment variables)
     default_key = os.getenv("GEMINI_API_KEY", "").strip()
     if not default_key or default_key == "your_gemini_api_key_here":
-        err_msg = "GEMINI_API_KEY is not set or using placeholder in server .env."
+        err_msg = "GEMINI_API_KEY not configured"
         set_last_runtime_error("gemini", GEMINI_DEFAULT_MODEL, err_msg, "KEY_MISSING")
         return None, err_msg, {"provider": "gemini", "model_used": "deterministic_local"}
 
